@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Z4Net", "Z4Net\Z4Net.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Technical", "Technical\Technical.csproj", "{AFBBEEAE-2B44-4764-A367-06AF774EADA7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Z4NetScheduler", "Z4NetScheduler\Z4NetScheduler.csproj", "{51E53EE4-B79C-4FD6-900A-2225690AE7AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AFBBEEAE-2B44-4764-A367-06AF774EADA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFBBEEAE-2B44-4764-A367-06AF774EADA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFBBEEAE-2B44-4764-A367-06AF774EADA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51E53EE4-B79C-4FD6-900A-2225690AE7AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51E53EE4-B79C-4FD6-900A-2225690AE7AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51E53EE4-B79C-4FD6-900A-2225690AE7AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51E53EE4-B79C-4FD6-900A-2225690AE7AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
