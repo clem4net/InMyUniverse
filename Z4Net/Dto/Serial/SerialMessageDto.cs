@@ -7,19 +7,10 @@ namespace Z4Net.Dto.Serial
     /// </summary>
     public class SerialMessageDto
     {
-
-        /// <summary>
-        /// Initialize object.
-        /// </summary>
-        public SerialMessageDto()
-        {
-            Content = new List<byte>();
-        }
-
         /// <summary>
         /// Current message received.
         /// </summary>
-        public List<byte> Content { get; set; }
+        public List<byte> Content { get; set; } = new List<byte>();
 
         /// <summary>
         /// Message header.
@@ -35,6 +26,5 @@ namespace Z4Net.Dto.Serial
         /// True if message is complete.
         /// </summary>
         public bool IsComplete { get; set; }
-
     }
 }
