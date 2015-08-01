@@ -13,14 +13,6 @@ namespace Z4Net.Dto.Devices
     {
 
         /// <summary>
-        /// Initialize.
-        /// </summary>
-        public ControllerDto()
-        {
-            Nodes = new List<DeviceDto>();
-        }
-
-        /// <summary>
         /// API version.
         /// </summary>
         [XmlAttribute("apiVersion")]
@@ -42,11 +34,13 @@ namespace Z4Net.Dto.Devices
         /// <summary>
         /// List of nodes Z nodes linked to the controller.
         /// </summary>
-        public List<DeviceDto> Nodes { get; set; }
+        [DataMember]
+        public List<DeviceDto> Nodes { get; set; } = new List<DeviceDto>();
 
         /// <summary>
         /// Port of the controller.
         /// </summary>
+        [DataMember]
         public PortDto Port { get; set; }
 
         /// <summary>

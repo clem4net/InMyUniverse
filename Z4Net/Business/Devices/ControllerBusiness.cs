@@ -50,11 +50,16 @@ namespace Z4Net.Business.Devices
                 var initPort = MessageQueueBusiness.Initialize(p);
                 if (initPort.IsOpen)
                 {
-                    result.Add(new ControllerDto
+                    var controller = new ControllerDto
                     {
                         DeviceClass = DeviceClass.StaticController,
                         DeviceClassGeneric = DeviceClassGeneric.StaticController,
-                    });
+                        Port = p
+                    };
+
+                    // get home id to valid controller
+                    controller.IsReady = GetHomeId(controller);
+                    if (controller.IsReady) result.Add(controller);
                 }
 
                 MessageQueueBusiness.Close();
@@ -139,7 +144,7 @@ namespace Z4Net.Business.Devices
         private static bool GetHomeId(ControllerDto controller)
         {
             // send message
-            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetHomeId));
+            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetHomeId, controller));
 
             // wait for response
             WaitEvent.WaitOne();
@@ -175,7 +180,7 @@ namespace Z4Net.Business.Devices
         private static bool GetZVersion(ControllerDto controller)
         {
             // send message
-            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetVersion));
+            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetVersion, controller));
 
             // wait for response
             WaitEvent.WaitOne();
@@ -213,7 +218,7 @@ namespace Z4Net.Business.Devices
         private static bool GetApiCapabilities(ControllerDto controller)
         {
             // send message
-            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetApiCapabilities));
+            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetApiCapabilities, controller));
 
             // wait for response
             WaitEvent.WaitOne();
@@ -256,7 +261,7 @@ namespace Z4Net.Business.Devices
         private static bool GetControllerNodes(ControllerDto controller)
         {
             // send message
-            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetControllerNodes));
+            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetControllerNodes, controller));
 
             // wait for response
             WaitEvent.WaitOne();
@@ -313,12 +318,13 @@ namespace Z4Net.Business.Devices
         private static bool GetNodeProtocol(ControllerDto controller, DeviceDto node)
         {
             // send message
-            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetNodeProtocol, node.ZIdentifier));
+            MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetNodeProtocol, controller, node.ZIdentifier));
 
             // wait for response
             WaitEvent.WaitOne();
 
             // get result
+            node.HomeIdentifier = controller.HomeIdentifier;
             return node.DeviceClass != DeviceClass.Unknown &&
                          node.DeviceClassGeneric != DeviceClassGeneric.Other;
         }
@@ -332,7 +338,7 @@ namespace Z4Net.Business.Devices
         {
             if (receivedMessage.Content.Count >= 5)
             {
-                var node = controller.Nodes.FirstOrDefault(x => x.ZIdentifier == receivedMessage.Node.ZIdentifier);
+                var node = controller.Nodes.FirstOrDefault(x => x.ZIdentifier == receivedMessage.ZIdentifier);
                 if (node != null)
                 {
                     node.DeviceClass = (DeviceClass) receivedMessage.Content[3];
@@ -348,17 +354,18 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Create a command message.
         /// </summary>
-        /// <param name="node">Concerned controller.</param>
+        /// <param name="controller">Contextual node of the message.</param>
         /// <param name="command">Command to process.</param>
-        /// <param name="zId">Node identifier. 0xFF if no node is concerned.</param>
+        /// <param name="zId">Node identifier to send in message. 0x00 if no node is concerned.</param>
         /// <returns>Message.</returns>
-        private static MessageDto CreateCommandMessage(MessageCommand command, int zId = 0)
+        private static MessageDto CreateCommandMessage(MessageCommand command, DeviceDto controller, int zId = 0)
         {
             var result = new MessageDto
             {
                 Command = command,
                 IsValid = true,
-                Node = zId == 0 ? null : new DeviceDto {ZIdentifier = zId},
+                Node = controller,
+                ZIdentifier = (byte)zId,
                 Type = MessageType.Request,
             };
 

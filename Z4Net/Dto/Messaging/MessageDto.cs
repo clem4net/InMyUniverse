@@ -40,6 +40,11 @@ namespace Z4Net.Dto.Messaging
         public DeviceDto Node { get; set; }
 
         /// <summary>
+        /// Node identifier concerned. 0 if no node is concerned.
+        /// </summary>
+        public byte ZIdentifier { get; set; }
+
+        /// <summary>
         /// True if message is valid.
         /// </summary>
         public bool IsValid { get; set; }

@@ -31,6 +31,9 @@ namespace Z4Net.Business.Messaging
         /// <returns>Connected port.</returns>
         internal static PortDto Initialize(PortDto port)
         {
+            // close existing port
+            Close();
+
             // connect port
             port = PortBusiness.Connect(port);
 
@@ -77,8 +80,11 @@ namespace Z4Net.Business.Messaging
         /// </summary>
         internal static void Close()
         {
-            Queue.TaskContinue = false;
-            Queue.TaskLaunch = false;
+            if (Queue != null)
+            {
+                Queue.TaskContinue = false;
+                Queue.TaskLaunch = false;
+            }
             PortBusiness.Close();
         }
 

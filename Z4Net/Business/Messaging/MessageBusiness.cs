@@ -71,6 +71,7 @@ namespace Z4Net.Business.Messaging
         internal static void ProcessResponse(MessageDto sendMessage, MessageDto receivedMessage)
         {
             receivedMessage.Node = sendMessage.Node;
+            receivedMessage.ZIdentifier = sendMessage.ZIdentifier;
             DevicesBusiness.ResponseReceived(sendMessage, receivedMessage);
         }
 
@@ -110,9 +111,9 @@ namespace Z4Net.Business.Messaging
                 (byte) message.Command
             };
 
-            if (message.Node != null)
+            if (message.ZIdentifier != 0)
             {
-                result.Add((byte) message.Node.ZIdentifier);
+                result.Add(message.ZIdentifier);
             }
 
             result.AddRange(message.Content);
