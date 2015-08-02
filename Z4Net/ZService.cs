@@ -27,7 +27,7 @@ namespace Z4Net
         /// <returns>Connected controller.</returns>
         public ControllerDto Connect(ControllerDto controller)
         {
-            return ControllerBusiness.Initialize(controller);
+            return ControllerBusiness.Connect(controller);
         }
 
         /// <summary>

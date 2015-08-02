@@ -47,7 +47,7 @@ namespace Z4Net.Business.Devices
             var result = new List<ControllerDto>();
             foreach (var p in ports)
             {
-                var initPort = MessageQueueBusiness.Initialize(p);
+                var initPort = MessageQueueBusiness.Connect(p);
                 if (initPort.IsOpen)
                 {
                     var controller = new ControllerDto
@@ -73,10 +73,10 @@ namespace Z4Net.Business.Devices
         /// </summary>
         /// <param name="controller">Port to initialize.</param>
         /// <returns>Controller of the port.</returns>
-        internal static ControllerDto Initialize(ControllerDto controller)
+        internal static ControllerDto Connect(ControllerDto controller)
         {
             // open port
-            controller.Port = MessageQueueBusiness.Initialize(controller.Port);
+            controller.Port = MessageQueueBusiness.Connect(controller.Port);
 
             if (controller.Port.IsOpen)
             {

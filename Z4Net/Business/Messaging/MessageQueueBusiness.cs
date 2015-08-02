@@ -29,7 +29,7 @@ namespace Z4Net.Business.Messaging
         /// </summary>
         /// <param name="port">Port to connect.</param>
         /// <returns>Connected port.</returns>
-        internal static PortDto Initialize(PortDto port)
+        internal static PortDto Connect(PortDto port)
         {
             // close existing port
             Close();
