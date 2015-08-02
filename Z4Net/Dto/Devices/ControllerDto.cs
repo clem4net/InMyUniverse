@@ -6,10 +6,10 @@ using Z4Net.Dto.Serial;
 namespace Z4Net.Dto.Devices
 {
     /// <summary>
-    /// Controller description.
+    /// Controler description.
     /// </summary>
     [DataContract]
-    public class ControllerDto : DeviceDto
+    public class ControlerDto : DeviceDto
     {
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace Z4Net.Dto.Devices
         public decimal ApiVersion { get; set; }
 
         /// <summary>
-        /// True if controller of the port is initialized.
+        /// True if controler of the port is initialized.
         /// </summary>
         [XmlIgnore]
         [DataMember]
@@ -32,13 +32,13 @@ namespace Z4Net.Dto.Devices
         public string ManufacturerIdentifier { get; set; }
 
         /// <summary>
-        /// List of nodes Z nodes linked to the controller.
+        /// List of nodes Z nodes linked to the controler.
         /// </summary>
         [DataMember]
         public List<DeviceDto> Nodes { get; set; } = new List<DeviceDto>();
 
         /// <summary>
-        /// Port of the controller.
+        /// Port of the controler.
         /// </summary>
         [DataMember]
         public PortDto Port { get; set; }
@@ -56,7 +56,7 @@ namespace Z4Net.Dto.Devices
         public string ProductType { get; set; }
 
         /// <summary>
-        /// Controller API capabilities.
+        /// Controler API capabilities.
         /// </summary>
         [XmlAttribute("apiCapabilities", DataType = "hexBinary")]
         public List<byte> ApiCapabilities { get; set; }

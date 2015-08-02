@@ -38,7 +38,7 @@ namespace Z4Net.Business.Messaging
             port = PortBusiness.Connect(port);
 
             // initialize queue
-            if (Queue == null) Queue = new MessageQueueDto {Port = port, State = QueueState.Stop};
+            Queue = new MessageQueueDto {Port = port, State = QueueState.Stop};
 
             // start listener
             if (Queue.TaskLaunch == false)
@@ -64,9 +64,9 @@ namespace Z4Net.Business.Messaging
         /// <summary>
         /// Send a message.
         /// </summary>
-        /// <param name="controller">Concerned controller.</param>
+        /// <param name="controler">Concerned controler.</param>
         /// <param name="message">Message to send.</param>
-        internal static void Send(ControllerDto controller, MessageDto message)
+        internal static void Send(ControlerDto controler, MessageDto message)
         {
             lock (Queue)
             {
@@ -117,8 +117,8 @@ namespace Z4Net.Business.Messaging
                         queue.ProcessingMessage = message;
 
                         // send message
-                        queue.Port.SerialMessage = MessageBusiness.ConvertToSerial(message);
-                        PortBusiness.Send(queue.Port);
+                        var serialMessage = MessageBusiness.ConvertToSerial(message);
+                        PortBusiness.Send(queue.Port, serialMessage);
 
                         // wait for message response
                         queue.State = QueueState.Wait;
@@ -141,14 +141,14 @@ namespace Z4Net.Business.Messaging
         /// <param name="receivedMessage">Received message.</param>
         private static void SendAcknowledgment(MessageQueueDto queue, MessageDto receivedMessage)
         {
-            queue.Port.SerialMessage = new SerialMessageDto
+            var message = new SerialMessageDto
             {
                 Content = new List<byte>
                 {
                     receivedMessage.IsValid ? (byte) MessageHeader.Acknowledgment : (byte) MessageHeader.NotAcknowledgment
                 }
             };
-            PortBusiness.Send(queue.Port);
+            PortBusiness.Send(queue.Port, message);
         }
 
         /// <summary>

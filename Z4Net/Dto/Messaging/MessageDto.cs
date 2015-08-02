@@ -42,7 +42,7 @@ namespace Z4Net.Dto.Messaging
         /// <summary>
         /// Node identifier concerned. 0 if no node is concerned.
         /// </summary>
-        public byte ZIdentifier { get; set; }
+        public int ZIdentifier { get; set; }
 
         /// <summary>
         /// True if message is valid.

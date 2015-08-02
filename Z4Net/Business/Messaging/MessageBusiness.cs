@@ -25,6 +25,7 @@ namespace Z4Net.Business.Messaging
             var content = CreateFrame(message);
             var result = new SerialMessageDto
             {
+                Header = (MessageHeader)content[0],
                 Content = content,
                 IsComplete = true,
                 Size = content.Count
@@ -113,7 +114,7 @@ namespace Z4Net.Business.Messaging
 
             if (message.ZIdentifier != 0)
             {
-                result.Add(message.ZIdentifier);
+                result.Add((byte)message.ZIdentifier);
             }
 
             result.AddRange(message.Content);

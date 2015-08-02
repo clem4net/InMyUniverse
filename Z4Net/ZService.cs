@@ -13,42 +13,43 @@ namespace Z4Net
         #region Public methods
 
         /// <summary>
-        /// Close controllers.
+        /// Close controlers.
         /// </summary>
         public void Close()
         {
-            ControllerBusiness.Close();
+            ControlerBusiness.Close();
         }
 
         /// <summary>
-        /// Connect a controller.
+        /// Connect a controler.
         /// </summary>
-        /// <param name="controller">Controller to connect.</param>
-        /// <returns>Connected controller.</returns>
-        public ControllerDto Connect(ControllerDto controller)
+        /// <param name="controler">Controler to connect.</param>
+        /// <returns>Connected controler.</returns>
+        public ControlerDto Connect(ControlerDto controler)
         {
-            return ControllerBusiness.Connect(controller);
+            if (controler?.Port == null) controler = new ControlerDto {Port = new Dto.Serial.PortDto()};
+            return ControlerBusiness.Connect(controler);
         }
 
         /// <summary>
-        /// Get controller plugged to the system.
+        /// Get controler plugged to the system.
         /// </summary>
-        /// <returns>Controller list.</returns>
-        public List<ControllerDto> GetControllers()
+        /// <returns>Controler list.</returns>
+        public List<ControlerDto> GetControlers()
         {
-            return ControllerBusiness.List();
+            return ControlerBusiness.List();
         }
 
         /// <summary>
         /// Set the value of a node.
         /// </summary>
-        /// <param name="controller">Controller to use.</param>
+        /// <param name="controler">Controler to use.</param>
         /// <param name="node">Node to set.</param>
         /// <param name="value">Value to set.</param>
         /// <returns>True if value is setted, else false.</returns>
-        public bool Set(ControllerDto controller, DeviceDto node, List<byte> value)
+        public bool Set(ControlerDto controler, DeviceDto node, List<byte> value)
         {
-            return DevicesBusiness.Set(controller, node, value);
+            return DevicesBusiness.Set(controler, node, value);
         }
 
         #endregion

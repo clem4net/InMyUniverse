@@ -12,29 +12,29 @@ namespace Z4Net
     {
 
         /// <summary>
-        /// Connect a controller.
+        /// Connect a controler.
         /// </summary>
-        /// <param name="controller">Controller to connect.</param>
-        /// <returns>Connected controller.</returns>
+        /// <param name="controler">Controler to connect.</param>
+        /// <returns>Connected controler.</returns>
         [OperationContract]
-        ControllerDto Connect(ControllerDto controller);
+        ControlerDto Connect(ControlerDto controler);
 
         /// <summary>
-        /// Get controller plugged to the system.
+        /// Get controler plugged to the system.
         /// </summary>
-        /// <returns>Controller list.</returns>
+        /// <returns>Controler list.</returns>
         [OperationContract]
-        List<ControllerDto> GetControllers();
+        List<ControlerDto> GetControlers();
 
         /// <summary>
         /// Set the value of a node.
         /// </summary>
-        /// <param name="controller">Controller to use.</param>
+        /// <param name="controler">Controler to use.</param>
         /// <param name="node">Node to set.</param>
         /// <param name="value">Value to set.</param>
         /// <returns>True if value is setted, else false.</returns>
         [OperationContract]
-        bool Set(ControllerDto controller, DeviceDto node, List<byte> value);
+        bool Set(ControlerDto controler, DeviceDto node, List<byte> value);
 
     }
 }

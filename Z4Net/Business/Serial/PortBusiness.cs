@@ -47,7 +47,7 @@ namespace Z4Net.Business.Serial
             if (Ports == null) Ports = new Dictionary<string, PortDto>();
 
             // search if port is already existing
-            var portName = port.Name.ToUpperInvariant();
+            var portName = port.Name?.ToUpperInvariant() ?? string.Empty;
             var result = Ports.Where(x => x.Key == portName).Select(x => x.Value).FirstOrDefault();
 
             // else add new port
@@ -92,7 +92,6 @@ namespace Z4Net.Business.Serial
         internal static SerialMessageDto Receive(PortDto port)
         {
             SerialMessageDto result;
-
             do
             {
                 using (var ctx = new PortDtoFactory())
@@ -108,14 +107,15 @@ namespace Z4Net.Business.Serial
         /// Send a message.
         /// </summary>
         /// <param name="port">Port to use containing message.</param>
+        /// <param name="message">Message to send.</param>
         /// <returns>Send result.</returns>
-        internal static bool Send(PortDto port)
+        internal static bool Send(PortDto port, SerialMessageDto message)
         {
             bool result;
 
             using (var ctx = new PortDtoFactory())
             {
-                result = ctx.Send(port);
+                result = ctx.Send(port, message);
             }
 
             return result;

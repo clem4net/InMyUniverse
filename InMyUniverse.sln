@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Technical", "Technical\Tech
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Z4NetScheduler", "Z4NetScheduler\Z4NetScheduler.csproj", "{51E53EE4-B79C-4FD6-900A-2225690AE7AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Z4Net.Tests", "Z4Net.Tests\Z4Net.Tests.csproj", "{3BFB3C97-EDBD-48F1-9089-768B6416EE92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{51E53EE4-B79C-4FD6-900A-2225690AE7AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51E53EE4-B79C-4FD6-900A-2225690AE7AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51E53EE4-B79C-4FD6-900A-2225690AE7AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BFB3C97-EDBD-48F1-9089-768B6416EE92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BFB3C97-EDBD-48F1-9089-768B6416EE92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BFB3C97-EDBD-48F1-9089-768B6416EE92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BFB3C97-EDBD-48F1-9089-768B6416EE92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

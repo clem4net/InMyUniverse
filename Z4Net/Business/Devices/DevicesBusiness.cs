@@ -17,10 +17,10 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Get the current value of a node.
         /// </summary>
-        /// <param name="controller">Controller to use.</param>
+        /// <param name="controler">Controler to use.</param>
         /// <param name="node">Node to call.</param>
         /// <returns>Node value.</returns>
-        internal static bool Get(ControllerDto controller, DeviceDto node)
+        internal static bool Get(ControlerDto controler, DeviceDto node)
         {
             var result = false;
 
@@ -29,7 +29,7 @@ namespace Z4Net.Business.Devices
                 var processAttr = ReflectionHelper.GetEnumValueAttribute<DeviceClassGeneric, DataReceivedAttribute>(node.DeviceClassGeneric);
                 if (processAttr != null)
                 {
-                    result = ReflectionHelper.ExecuteStaticMethod<bool>(processAttr.ClassType, "Get", controller, node);
+                    result = ReflectionHelper.ExecuteStaticMethod<bool>(processAttr.ClassType, "Get", controler, node);
                 }
             }
 
@@ -39,20 +39,20 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Basic set action.
         /// </summary>
-        /// <param name="controller">Controller.</param>
+        /// <param name="controler">Controler.</param>
         /// <param name="node">Node to set.</param>
         /// <param name="value">Value to set.</param>
         /// <returns>True if value is setted.</returns>
-        internal static bool Set(ControllerDto controller, DeviceDto node, List<byte> value)
+        internal static bool Set(ControlerDto controler, DeviceDto node, List<byte> value)
         {
             var result = false;
 
-            if (controller != null && node != null && value != null && value.Count > 0 && node.DeviceClassGeneric != DeviceClassGeneric.Other)
+            if (controler != null && node != null && value != null && value.Count > 0 && node.DeviceClassGeneric != DeviceClassGeneric.Other)
             {
                 var processAttr = ReflectionHelper.GetEnumValueAttribute<DeviceClassGeneric, DataReceivedAttribute>(node.DeviceClassGeneric);
                 if (processAttr != null)
                 {
-                    result = ReflectionHelper.ExecuteStaticMethod<bool>(processAttr.ClassType, "Set", controller, node, value);
+                    result = ReflectionHelper.ExecuteStaticMethod<bool>(processAttr.ClassType, "Set", controler, node, value);
                 }
             }
 

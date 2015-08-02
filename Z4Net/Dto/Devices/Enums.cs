@@ -20,13 +20,13 @@ namespace Z4Net.Dto.Devices
     public enum DeviceClass
     {
         Unknown = 0x00,
-        StaticController = 0x01,
-        Controller = 0x02,
+        StaticControler = 0x01,
+        Controler = 0x02,
         EnhancedSlave = 0x03,
         Slave = 0x04,
         Installer = 0x05,
         RoutingSlave = 0x06,
-        BridgeController = 0x07,
+        BridgeControler = 0x07,
         DeviceUnderTest = 0x08
     }
 
@@ -36,8 +36,8 @@ namespace Z4Net.Dto.Devices
     public enum DeviceClassGeneric
     {
         Other = 0x00,
-        [DataReceived(typeof(ControllerBusiness))]
-        StaticController = 0x02,
+        [DataReceived(typeof(ControlerBusiness))]
+        StaticControler = 0x02,
         AvControlPoiunt = 0x03,
         Display = 0x04,
         Thermostat = 0x08,

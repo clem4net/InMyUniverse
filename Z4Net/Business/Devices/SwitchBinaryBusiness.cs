@@ -18,7 +18,7 @@ namespace Z4Net.Business.Devices
         #region Private data
 
         /// <summary>
-        /// Wait event from node.
+        /// Wait event.
         /// </summary>
         private static readonly EventWaitHandle WaitEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
 
@@ -29,37 +29,39 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Get switch value.
         /// </summary>
-        /// <param name="controller">Concerned controller.</param>
+        /// <param name="controler">Concerned controler.</param>
         /// <param name="node">Concerned node.</param>
         /// <returns>Value of node.</returns>
-        internal static bool Get(ControllerDto controller, DeviceDto node)
+        internal static bool Get(ControlerDto controler, DeviceDto node)
         {
             // send message
             node.Value = null;
-            MessageQueueBusiness.Send(controller,CreateCommandMessage(node, new List<byte> { (byte)SwitchBinaryAction.Get}));
+            MessageQueueBusiness.Send(controler,CreateCommandMessage(node, new List<byte> { (byte)SwitchBinaryAction.Get}));
 
-            // wait for response
-            WaitEvent.WaitOne();
-
+            // wait for response from controler
+            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            
             return node.Value != null;
         }
 
         /// <summary>
         /// Set ON a switch.
         /// </summary>
-        /// <param name="controller">Concerned controller.</param>
+        /// <param name="controler">Concerned controler.</param>
         /// <param name="node">Concerned node.</param>
         /// <param name="value">"0xFF" to set on, "0x00" to set off.</param>
         /// <returns>Updated node.</returns>
-        internal static bool Set(ControllerDto controller, DeviceDto node, List<byte> value)
+        internal static bool Set(ControlerDto controler, DeviceDto node, List<byte> value)
         {
             // send message
-            MessageQueueBusiness.Send(controller, CreateCommandMessage(node, new List<byte> { (byte)SwitchBinaryAction.Set, value.FirstOrDefault() }));
+            MessageQueueBusiness.Send(controler, CreateCommandMessage(node, new List<byte> { (byte)SwitchBinaryAction.Set, value.FirstOrDefault() }));
 
-            // wait for response
+            // wait for response from controller
             WaitEvent.WaitOne();
 
-            return node.Value == BitConverter.ToString(value.ToArray());
+            // get node value
+            var result = Get(controler, node);
+            return result && node.Value == BitConverter.ToString(value.ToArray());
         }
 
         /// <summary>
@@ -95,9 +97,8 @@ namespace Z4Net.Business.Devices
         internal static void ResponseReceived(MessageDto requestMessage, MessageDto receivedMessage)
         {
             // if message received is good, wait event is released.
-            if (requestMessage.Command == receivedMessage.Command &&
-                receivedMessage.Command == MessageCommand.SendData && receivedMessage.Content.Count == 1 &&
-                receivedMessage.Content.First() == 0x01)
+            if (receivedMessage.Command == MessageCommand.SendData &&
+                receivedMessage.Content.Count == 1 && receivedMessage.Content.First() == 0x01)
             {
                 WaitEvent.Set();
             }
@@ -122,6 +123,7 @@ namespace Z4Net.Business.Devices
                 IsValid = true,
                 Node = node,
                 Type = MessageType.Request,
+                ZIdentifier = node.ZIdentifier
             };
 
             // fill content

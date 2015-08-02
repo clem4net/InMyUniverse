@@ -11,9 +11,9 @@ namespace Z4Net.Dto.Devices
     {
 
         /// <summary>
-        /// Home identifier of the controller of the node.
+        /// Home identifier of the controler of the node.
         /// </summary>
-        [XmlAttribute("controllerHomeId")]
+        [XmlAttribute("controlerHomeId")]
         [DataMember]
         public string HomeIdentifier { get; set; }
 

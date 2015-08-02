@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using Technical;
 using Z4Net.Dto.Serial;
 
 namespace Z4Net.DtoFactory.Serial
@@ -43,7 +44,11 @@ namespace Z4Net.DtoFactory.Serial
         {
             try
             {
-                port.RawPort = new SerialPort(port.Name);
+                port.RawPort = new SerialPort(port.Name)
+                {
+                    BaudRate = 115200,
+                    ReceivedBytesThreshold = 1 // API flush when 1 octet is in send buffer
+                };
                 port.RawPort.Open();
                 port.IsOpen = port.RawPort.IsOpen;
             }
@@ -89,35 +94,37 @@ namespace Z4Net.DtoFactory.Serial
         /// <returns>Completed message.</returns>
         public SerialMessageDto Receive(PortDto port)
         {
-            ReadBytes(port.RawPort).ForEach(port.CurrentBuffer.Enqueue);
+            ReadBytes(port.RawPort).ForEach(port.ReadBuffer.Enqueue);
 
-            if (port.CurrentBuffer.Count != 0)
+            // reinitialize message
+            if (port.ReceiveMessage.IsComplete)
             {
-                // reinitialize message
-                if (port.SerialMessage.IsComplete)
-                {
-                    port.SerialMessage = new SerialMessageDto();
-                }
-
-                // complete message
-                port.SerialMessage = BuildMessage(port);
+                port.ReceiveMessage = new SerialMessageDto();
             }
 
-            return port.SerialMessage;
+            // complete message
+            if (port.ReadBuffer.Count != 0)
+            {
+                port.ReceiveMessage = BuildMessage(port);
+            }
+
+            return port.ReceiveMessage;
         }
 
         /// <summary>
         /// Send a message.
         /// </summary>
         /// <param name="port">Port to use.</param>
+        /// <param name="message">Message to send.</param>
         /// <returns>Send result.</returns>
-        public bool Send(PortDto port)
+        public bool Send(PortDto port, SerialMessageDto message)
         {
             bool result;
 
             try
             {
-                port.RawPort.Write(port.SerialMessage.Content.ToArray(), 0, port.SerialMessage.Content.Count);
+                port.RawPort.Write(message.Content.ToArray(), 0, message.Content.Count);
+                TraceHelper.TraceFrame(message.Content, true);
                 result = true;
             }
             catch
@@ -172,8 +179,8 @@ namespace Z4Net.DtoFactory.Serial
         /// <returns>Recevied message.</returns>
         private SerialMessageDto BuildMessage(PortDto port)
         {
-            var buffer = port.CurrentBuffer;
-            var message = port.SerialMessage;
+            var buffer = port.ReadBuffer;
+            var message = port.ReceiveMessage;
 
             // new message
             if (message.Content.Count == 0)
@@ -204,6 +211,7 @@ namespace Z4Net.DtoFactory.Serial
             {
                 message.IsComplete = true;
             }
+            if (message.IsComplete) TraceHelper.TraceFrame(message.Content, false);
 
             return message;
         }

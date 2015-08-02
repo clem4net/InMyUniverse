@@ -14,12 +14,12 @@ namespace Z4Net.Dto.Serial
         /// <summary>
         /// Buffer of bytes not processed.
         /// </summary>
-        public Queue<byte> CurrentBuffer { get; set; } = new Queue<byte>();
+        public Queue<byte> ReadBuffer { get; set; } = new Queue<byte>();
 
         /// <summary>
-        /// Current received message.
+        /// Message received.
         /// </summary>
-        public SerialMessageDto SerialMessage { get; set; } = new SerialMessageDto();
+        public SerialMessageDto ReceiveMessage { get; set; } = new SerialMessageDto();
 
         /// <summary>
         /// True if port is open.

@@ -11,17 +11,9 @@ namespace Z4Net.Dto.Messaging
     {
 
         /// <summary>
-        /// Initialize.
-        /// </summary>
-        public MessageQueueDto()
-        {
-            Messages = new Queue<MessageDto>();
-        }
-
-        /// <summary>
         /// Message queue.
         /// </summary>
-        public Queue<MessageDto> Messages { get; set; }
+        public Queue<MessageDto> Messages { get; } = new Queue<MessageDto>();
 
         /// <summary>
         /// Message in process.
