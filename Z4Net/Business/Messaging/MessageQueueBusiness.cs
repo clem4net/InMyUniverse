@@ -130,7 +130,7 @@ namespace Z4Net.Business.Messaging
                     }
                 }
 
-                if (wait) Task.Delay(Constants.WaitSendTask);
+                if (wait) Task.Delay(MessageConstants.WaitSendTask);
             }
         }
 
@@ -185,7 +185,7 @@ namespace Z4Net.Business.Messaging
                 }
 
                 // wait if no message is got
-                if (serialMessage.Size == 0) await Task.Delay(Constants.WaitSendTask);
+                if (serialMessage.Size == 0) await Task.Delay(MessageConstants.WaitSendTask);
             }
         }
 

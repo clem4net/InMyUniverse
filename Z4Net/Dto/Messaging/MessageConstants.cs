@@ -3,7 +3,7 @@
     /// <summary>
     /// Z constants.
     /// </summary>
-    public static class Constants
+    public static class MessageConstants
     {
 
         /// <summary>

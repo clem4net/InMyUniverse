@@ -147,7 +147,7 @@ namespace Z4Net.Business.Devices
             MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetHomeId, controller));
 
             // wait for response
-            WaitEvent.WaitOne();
+            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
 
             // get result
             return string.IsNullOrEmpty(controller.HomeIdentifier) == false;
@@ -183,7 +183,7 @@ namespace Z4Net.Business.Devices
             MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetVersion, controller));
 
             // wait for response
-            WaitEvent.WaitOne();
+            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
 
             // get result
             return !string.IsNullOrEmpty(controller.ZVersion);
@@ -221,7 +221,7 @@ namespace Z4Net.Business.Devices
             MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetApiCapabilities, controller));
 
             // wait for response
-            WaitEvent.WaitOne();
+            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
 
             // get result
             return !string.IsNullOrEmpty(controller.ManufacturerIdentifier) &&
@@ -264,7 +264,7 @@ namespace Z4Net.Business.Devices
             MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetControllerNodes, controller));
 
             // wait for response
-            WaitEvent.WaitOne();
+            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
 
             // get result
             var result = controller.Nodes != null;
@@ -321,7 +321,7 @@ namespace Z4Net.Business.Devices
             MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetNodeProtocol, controller, node.ZIdentifier));
 
             // wait for response
-            WaitEvent.WaitOne();
+            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
 
             // get result
             node.HomeIdentifier = controller.HomeIdentifier;

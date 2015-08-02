@@ -54,10 +54,11 @@
     <Compile Include="Business\Serial\PortBusiness.cs" />
     <Compile Include="DtoFactory\Serial\PortDtoFactory.cs" />
     <Compile Include="Dto\Attributes\DataReceivedAttribute.cs" />
+    <Compile Include="Dto\Devices\DeviceConstants.cs" />
     <Compile Include="Dto\Devices\ControllerDto.cs" />
     <Compile Include="Dto\Devices\Enums.cs" />
     <Compile Include="Dto\Devices\DeviceDto.cs" />
-    <Compile Include="Dto\Messaging\Constants.cs" />
+    <Compile Include="Dto\Messaging\MessageConstants.cs" />
     <Compile Include="Dto\Messaging\Enums.cs" />
     <Compile Include="Dto\Messaging\MessageDto.cs" />
     <Compile Include="Dto\Messaging\MessageQueueDto.cs" />
