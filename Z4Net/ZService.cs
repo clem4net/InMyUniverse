@@ -13,6 +13,14 @@ namespace Z4Net
         #region Public methods
 
         /// <summary>
+        /// Close controllers.
+        /// </summary>
+        public void Close()
+        {
+            ControllerBusiness.Close();
+        }
+
+        /// <summary>
         /// Connect a controller.
         /// </summary>
         /// <param name="controller">Controller to connect.</param>
