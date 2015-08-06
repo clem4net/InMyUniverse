@@ -13,43 +13,56 @@ namespace Z4Net
         #region Public methods
 
         /// <summary>
-        /// Close controlers.
+        /// Close controllers.
         /// </summary>
         public void Close()
         {
-            ControlerBusiness.Close();
+            DevicesBusiness.Close();
         }
 
         /// <summary>
-        /// Connect a controler.
+        /// Configure a device.
         /// </summary>
-        /// <param name="controler">Controler to connect.</param>
-        /// <returns>Connected controler.</returns>
-        public ControlerDto Connect(ControlerDto controler)
+        /// <param name="controller">Controller to use.</param>
+        /// <param name="device">Device to configure.</param>
+        /// <param name="parameter">Parameter identifier.</param>
+        /// <param name="value">Parameter value.</param>
+        /// <returns>Configuration result.</returns>
+        public bool Configure(ControllerDto controller, DeviceDto device, byte parameter, List<byte> value)
         {
-            if (controler?.Port == null) controler = new ControlerDto {Port = new Dto.Serial.PortDto()};
-            return ControlerBusiness.Connect(controler);
+            return DevicesBusiness.Configure(controller, device, parameter, value);
         }
 
         /// <summary>
-        /// Get controler plugged to the system.
+        /// Connect a controller.
         /// </summary>
-        /// <returns>Controler list.</returns>
-        public List<ControlerDto> GetControlers()
+        /// <param name="controller">Controller to connect.</param>
+        /// <returns>Connected controller.</returns>
+        public ControllerDto Connect(ControllerDto controller)
         {
-            return ControlerBusiness.List();
+            if (controller?.Port == null) controller = new ControllerDto {Port = new Dto.Serial.PortDto()};
+            return DevicesBusiness.Connect(controller);
+        }
+
+        /// <summary>
+        /// Get controller plugged to the system.
+        /// </summary>
+        /// <returns>Controller list.</returns>
+        public List<ControllerDto> GetControllers()
+        {
+            return DevicesBusiness.ListControllers();
         }
 
         /// <summary>
         /// Set the value of a node.
         /// </summary>
-        /// <param name="controler">Controler to use.</param>
-        /// <param name="node">Node to set.</param>
+        /// <param name="controller">Controller to use.</param>
+        /// <param name="device">Node to set.</param>
         /// <param name="value">Value to set.</param>
         /// <returns>True if value is setted, else false.</returns>
-        public bool Set(ControlerDto controler, DeviceDto node, List<byte> value)
+        public bool Set(ControllerDto controller, DeviceDto device, List<byte> value)
         {
-            return DevicesBusiness.Set(controler, node, value);
+            return DevicesBusiness.Set(controller, device, value);
         }
 
         #endregion

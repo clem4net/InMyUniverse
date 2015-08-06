@@ -6,16 +6,22 @@ using System.Threading;
 using Z4Net.Business.Messaging;
 using Z4Net.Dto.Devices;
 using Z4Net.Dto.Messaging;
+using Z4Net.Dto.Serial;
 
 namespace Z4Net.Business.Devices
 {
     /// <summary>
-    /// Controler business.
+    /// Controller business.
     /// </summary>
-    internal static class ControlerBusiness
+    internal class ControllerBusiness : IDevice
     {
 
         #region Private data
+
+        /// <summary>
+        /// Acknowledgment wait event.
+        /// </summary>
+        private static readonly EventWaitHandle WaitAcknowledgment = new EventWaitHandle(false, EventResetMode.AutoReset);
 
         /// <summary>
         /// Wait event from node.
@@ -27,7 +33,7 @@ namespace Z4Net.Business.Devices
         #region Internal methods
 
         /// <summary>
-        /// Close controler.
+        /// Close controller.
         /// </summary>
         internal static void Close()
         {
@@ -35,31 +41,35 @@ namespace Z4Net.Business.Devices
         }
 
         /// <summary>
-        /// Detect ports corresponding to a controler.
+        /// Detect ports corresponding to a controller.
         /// </summary>
         /// <returns>Port list.s</returns>
-        internal static List<ControlerDto> List()
+        internal static List<ControllerDto> List()
         {
             // get existing ports
             var ports = MessageQueueBusiness.ListPorts();
 
             // try to connect
-            var result = new List<ControlerDto>();
+            var result = new List<ControllerDto>();
             foreach (var p in ports)
             {
                 var initPort = MessageQueueBusiness.Connect(p);
                 if (initPort.IsOpen)
                 {
-                    var controler = new ControlerDto
+                    var controller = new ControllerDto
                     {
-                        DeviceClass = DeviceClass.StaticControler,
-                        DeviceClassGeneric = DeviceClassGeneric.StaticControler,
+                        DeviceClass = DeviceClass.StaticController,
+                        DeviceClassGeneric = DeviceClassGeneric.StaticController,
                         Port = p
                     };
 
-                    // get home id to valid controler
-                    controler.IsReady = GetHomeId(controler);
-                    if (controler.IsReady) result.Add(controler);
+                    // get home id to valid controller
+                    controller.IsReady = GetHomeId(controller);
+                    if (controller.IsReady)
+                    {
+                        controller.IsReady = false;
+                        result.Add(controller);
+                    }
                 }
 
                 MessageQueueBusiness.Close();
@@ -69,67 +79,110 @@ namespace Z4Net.Business.Devices
         }
 
         /// <summary>
-        /// Initialize the controler on specified port.
+        /// Initialize the controller on specified port.
         /// </summary>
-        /// <param name="controler">Port to initialize.</param>
-        /// <returns>Controler of the port.</returns>
-        internal static ControlerDto Connect(ControlerDto controler)
+        /// <param name="controller">Port to initialize.</param>
+        /// <returns>Controller of the port.</returns>
+        internal static ControllerDto Connect(ControllerDto controller)
         {
             // open port
-            controler.Port = MessageQueueBusiness.Connect(controler.Port);
+            controller.Port = MessageQueueBusiness.Connect(controller.Port);
 
-            if (controler.Port.IsOpen)
+            if (controller.Port.IsOpen)
             {
-                controler.IsReady = GetZVersion(controler);
-                if (controler.IsReady) controler.IsReady = GetHomeId(controler);
-                if (controler.IsReady) controler.IsReady = GetControlerNodes(controler);
-                if (controler.IsReady)
+                controller.IsReady = GetZVersion(controller);
+                if (controller.IsReady) controller.IsReady = GetHomeId(controller);
+                if (controller.IsReady) controller.IsReady = GetApiCapabilities(controller);
+                if (controller.IsReady) controller.IsReady = GetControllerNodes(controller);
+                if (controller.IsReady)
                 {
-                    foreach (var x in controler.Nodes)
+                    foreach (var x in controller.Nodes)
                     {
-                        controler.IsReady = GetNodeProtocol(controler, x);
+                        controller.IsReady = GetNodeProtocol(controller, x);
                     }
                 }
             }
             else
             {
-                controler.IsReady = false;
+                controller.IsReady = false;
             }
 
-            return controler;
+            return controller;
+        }
+
+        #endregion
+
+        #region IDevice
+
+        /// <summary>
+        /// Get the value of the device.
+        /// </summary>
+        /// <param name="controller">Concerned controller.</param>
+        /// <param name="device">Concerned device.</param>
+        /// <returns>True if device value is completed.</returns>
+        public bool Get(ControllerDto controller, DeviceDto device)
+        {
+            return true;
         }
 
         /// <summary>
-        /// Called when a message is received.
+        /// Set the device value.
         /// </summary>
-        /// <param name="requestMessage">Request message.</param>
-        /// <param name="receivedMessage">Recevied message.</param>
-        /// <returns>Next state of request message.</returns>
-        internal static void ResponseReceived(MessageDto requestMessage, MessageDto receivedMessage)
+        /// <param name="controller">Concerned controller.</param>
+        /// <param name="device">Concerned device.</param>
+        /// <param name="value">Value to set.</param>
+        /// <returns>True if value is setted.</returns>
+        public bool Set(ControllerDto controller, DeviceDto device, List<byte> value)
         {
-            if (receivedMessage?.Node != null)
-            {
-                var controler = (ControlerDto) receivedMessage.Node;
+            return true;
+        }
 
-                switch (receivedMessage.Command)
+        /// <summary>
+        /// Acknowlegment received.
+        /// </summary>
+        public void AcknowlegmentReceived(MessageHeader ack)
+        {
+            WaitAcknowledgment.Set();
+        }
+
+        /// <summary>
+        /// A response a received from node.
+        /// </summary>
+        /// <param name="resposne">Response message.</param>
+        public void ResponseReceived(MessageDto resposne)
+        {
+            if (resposne?.Node != null)
+            {
+                var controller = (ControllerDto)resposne.Node;
+
+                switch (resposne.Command)
                 {
                     case MessageCommand.GetApiCapabilities:
-                        GetApiCapabilitiesResponse(controler, receivedMessage);
+                        GetApiCapabilitiesResponse(controller, resposne);
                         break;
                     case MessageCommand.GetHomeId:
-                        GetHomeIdResponse(controler, receivedMessage);
+                        GetHomeIdResponse(controller, resposne);
                         break;
                     case MessageCommand.GetVersion:
-                        GetZVersionResponse(controler, receivedMessage);
+                        GetZVersionResponse(controller, resposne);
                         break;
-                    case MessageCommand.GetControlerNodes:
-                        GetControlerNodesResponse(controler, receivedMessage);
+                    case MessageCommand.GetControllerNodes:
+                        GetControllerNodesResponse(controller, resposne);
                         break;
                     case MessageCommand.GetNodeProtocol:
-                        GetNodeProtocolResponse(controler, receivedMessage);
+                        GetNodeProtocolResponse(controller, resposne);
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// A request is recevied from node.
+        /// </summary>
+        /// <param name="request">Received message.</param>
+        public void RequestRecevied(MessageDto request)
+        {
+            // Not used
         }
 
         #endregion
@@ -137,34 +190,36 @@ namespace Z4Net.Business.Devices
         #region Private methods
 
         /// <summary>
-        /// Get the controler home identifier.
+        /// Get the controller home identifier.
         /// </summary>
-        /// <param name="controler">Controler to get.</param>
+        /// <param name="controller">Controller to get.</param>
         /// <returns>True if home id is got, else false.</returns>
-        private static bool GetHomeId(ControlerDto controler)
+        private static bool GetHomeId(ControllerDto controller)
         {
             // send message
-            MessageQueueBusiness.Send(controler, CreateCommandMessage(MessageCommand.GetHomeId, controler));
-
-            // wait for response
-            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetHomeId, controller)))
+            {
+                // wait for ack and response
+                WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
+                WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            }
 
             // get result
-            return string.IsNullOrEmpty(controler.HomeIdentifier) == false;
+            return string.IsNullOrEmpty(controller.HomeIdentifier) == false;
         }
 
         /// <summary>
         /// Execute command "Get home id" and node identifier.
         /// </summary>
-        /// <param name="controler">Concerned controler.s</param>
+        /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetHomeIdResponse(ControlerDto controler, MessageDto receivedMessage)
+        private static void GetHomeIdResponse(ControllerDto controller, MessageDto receivedMessage)
         {
-            // complete controler
+            // complete controller
             if (receivedMessage.Content.Count >= 5)
             {
-                controler.HomeIdentifier = BitConverter.ToString(receivedMessage.Content.Take(4).ToArray());
-                controler.ZIdentifier = receivedMessage.Content.Last();
+                controller.HomeIdentifier = BitConverter.ToString(receivedMessage.Content.Take(4).ToArray());
+                controller.ZIdentifier = receivedMessage.Content.Last();
             }
 
             // release event
@@ -175,33 +230,35 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Get Z version.
         /// </summary>
-        /// <param name="controler">Concerned controler.</param>
+        /// <param name="controller">Concerned controller.</param>
         /// <returns>True if identifier is got.</returns>
-        private static bool GetZVersion(ControlerDto controler)
+        private static bool GetZVersion(ControllerDto controller)
         {
             // send message
-            MessageQueueBusiness.Send(controler, CreateCommandMessage(MessageCommand.GetVersion, controler));
-
-            // wait for response
-            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetVersion, controller)))
+            {
+                // wait for ack and response
+                WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
+                WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            }
 
             // get result
-            return !string.IsNullOrEmpty(controler.ZVersion);
+            return !string.IsNullOrEmpty(controller.ZVersion);
         }
 
         /// <summary>
         /// Execute command "Get version".
         /// </summary>
-        /// <param name="controler">Concerned controler.s</param>
+        /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetZVersionResponse(ControlerDto controler, MessageDto receivedMessage)
+        private static void GetZVersionResponse(ControllerDto controller, MessageDto receivedMessage)
         {
-            // complete controler
+            // complete controller
             if (receivedMessage.Content.Count >= 3)
             {
                 var end = receivedMessage.Content.TakeWhile(b => b != '\0').Count();
-                controler.ZVersion = Encoding.ASCII.GetString(receivedMessage.Content.Take(end).ToArray());
-                controler.DeviceClass = (DeviceClass)receivedMessage.Content[receivedMessage.Content.Count - 1];
+                controller.ZVersion = Encoding.ASCII.GetString(receivedMessage.Content.Take(end).ToArray());
+                controller.DeviceClass = (DeviceClass)receivedMessage.Content[receivedMessage.Content.Count - 1];
             }
 
             // release event
@@ -212,40 +269,42 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Get API capabilities.
         /// </summary>
-        /// <param name="controler">Concerned controler.</param>
+        /// <param name="controller">Concerned controller.</param>
         /// <returns>True if identifier is got.</returns>
         /// <remarks>Not used because I don't how to use the response.</remarks>
-        private static bool GetApiCapabilities(ControlerDto controler)
+        private static bool GetApiCapabilities(ControllerDto controller)
         {
             // send message
-            MessageQueueBusiness.Send(controler, CreateCommandMessage(MessageCommand.GetApiCapabilities, controler));
-
-            // wait for response
-            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetApiCapabilities, controller)))
+            {
+                // wait for ack and response
+                WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
+                WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            }
 
             // get result
-            return !string.IsNullOrEmpty(controler.ManufacturerIdentifier) &&
-                   !string.IsNullOrEmpty(controler.ProductType) &&
-                   !string.IsNullOrEmpty(controler.ProductIdentifier);
+            return !string.IsNullOrEmpty(controller.ManufacturerIdentifier) &&
+                   !string.IsNullOrEmpty(controller.ProductType) &&
+                   !string.IsNullOrEmpty(controller.ProductIdentifier);
         }
 
         /// <summary>
         /// Execute command to get COM capabilitis.
         /// </summary>
-        /// <param name="controler">Concerned controler.s</param>
+        /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetApiCapabilitiesResponse(ControlerDto controler, MessageDto receivedMessage)
+        private static void GetApiCapabilitiesResponse(ControllerDto controller, MessageDto receivedMessage)
         {
             if (receivedMessage.Content.Count >= 6)
             {
                 decimal version;
                 decimal.TryParse(string.Concat(receivedMessage.Content[0], ",", receivedMessage.Content[1]), out version);
-                controler.ApiVersion = version;
+                controller.ApiVersion = version;
 
-                controler.ManufacturerIdentifier = string.Concat(receivedMessage.Content[2].ToString("00"), receivedMessage.Content[3].ToString("00"));
-                controler.ProductType = string.Concat(receivedMessage.Content[3].ToString("00"), receivedMessage.Content[4].ToString("00"));
-                controler.ProductIdentifier = string.Concat(receivedMessage.Content[5].ToString("00"), receivedMessage.Content[6].ToString("00"));
-                controler.ApiCapabilities = receivedMessage.Content.Skip(7).ToList();
+                controller.ManufacturerIdentifier = string.Concat(receivedMessage.Content[2].ToString("00"), receivedMessage.Content[3].ToString("00"));
+                controller.ProductType = string.Concat(receivedMessage.Content[3].ToString("00"), receivedMessage.Content[4].ToString("00"));
+                controller.ProductIdentifier = string.Concat(receivedMessage.Content[5].ToString("00"), receivedMessage.Content[6].ToString("00"));
+                controller.ApiCapabilities = receivedMessage.Content.Skip(7).ToList();
             }
 
             // release event
@@ -254,21 +313,23 @@ namespace Z4Net.Business.Devices
 
 
         /// <summary>
-        /// Get nodes known by the controler.
+        /// Get nodes known by the controller.
         /// </summary>
-        /// <param name="controler">Controler.</param>
+        /// <param name="controller">Controller.</param>
         /// <returns>Process result.</returns>
-        private static bool GetControlerNodes(ControlerDto controler)
+        private static bool GetControllerNodes(ControllerDto controller)
         {
             // send message
-            MessageQueueBusiness.Send(controler, CreateCommandMessage(MessageCommand.GetControlerNodes, controler));
-
-            // wait for response
-            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetControllerNodes, controller)))
+            {
+                // wait for response
+                WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
+                WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            }
 
             // get result
-            var result = controler.Nodes != null;
-            if (!result) controler.Nodes = new List<DeviceDto>();
+            var result = controller.Nodes != null;
+            if (!result) controller.Nodes = new List<DeviceDto>();
 
             return result;
         }
@@ -276,13 +337,13 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Execute command to get note list.
         /// </summary>
-        /// <param name="controler">Concerned controler.s</param>
+        /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetControlerNodesResponse(ControlerDto controler, MessageDto receivedMessage)
+        private static void GetControllerNodesResponse(ControllerDto controller, MessageDto receivedMessage)
         {
             if (receivedMessage.Content.Count >= 29)
             {
-                controler.Nodes = new List<DeviceDto>();
+                controller.Nodes = new List<DeviceDto>();
                 for (var i = 3; i < 32; i++)
                 {
                     var byteData = receivedMessage.Content[i];
@@ -290,9 +351,9 @@ namespace Z4Net.Business.Devices
                     {
                         if ((byteData & (byte) Math.Pow(2, b)) == (byte) Math.Pow(2, b))
                         {
-                            controler.Nodes.Add(new DeviceDto
+                            controller.Nodes.Add(new DeviceDto
                             {
-                                HomeIdentifier = controler.HomeIdentifier,
+                                HomeIdentifier = controller.HomeIdentifier,
                                 ZIdentifier = ((i - 3)*8) + b + 1
                             });
                         }
@@ -308,37 +369,37 @@ namespace Z4Net.Business.Devices
             WaitEvent.Set();
         }
 
-
         /// <summary>
         /// Get node protocol.
         /// </summary>
-        /// <param name="controler">Controler.</param>
+        /// <param name="controller">Controller.</param>
         /// <param name="node">Z node to complete.</param>
         /// <returns>Process result.</returns>
-        private static bool GetNodeProtocol(ControlerDto controler, DeviceDto node)
+        private static bool GetNodeProtocol(ControllerDto controller, DeviceDto node)
         {
             // send message
-            MessageQueueBusiness.Send(controler, CreateCommandMessage(MessageCommand.GetNodeProtocol, controler, node.ZIdentifier));
-
-            // wait for response
-            WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetNodeProtocol, controller, node.ZIdentifier)))
+            {
+                // wait for response
+                WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
+                WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+            }
 
             // get result
-            node.HomeIdentifier = controler.HomeIdentifier;
-            return node.DeviceClass != DeviceClass.Unknown &&
-                         node.DeviceClassGeneric != DeviceClassGeneric.Other;
+            node.HomeIdentifier = controller.HomeIdentifier;
+            return node.DeviceClass != DeviceClass.Unknown && node.DeviceClassGeneric != DeviceClassGeneric.Other;
         }
 
         /// <summary>
         /// Process the response to get a node protocol.
         /// </summary>
-        /// <param name="controler">Concerned controler.s</param>
+        /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetNodeProtocolResponse(ControlerDto controler, MessageDto receivedMessage)
+        private static void GetNodeProtocolResponse(ControllerDto controller, MessageDto receivedMessage)
         {
             if (receivedMessage.Content.Count >= 5)
             {
-                var node = controler.Nodes.FirstOrDefault(x => x.ZIdentifier == receivedMessage.ZIdentifier);
+                var node = controller.Nodes.FirstOrDefault(x => x.ZIdentifier == receivedMessage.ZIdentifier);
                 if (node != null)
                 {
                     node.DeviceClass = (DeviceClass) receivedMessage.Content[3];
@@ -354,17 +415,17 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Create a command message.
         /// </summary>
-        /// <param name="controler">Contextual node of the message.</param>
+        /// <param name="controller">Contextual node of the message.</param>
         /// <param name="command">Command to process.</param>
         /// <param name="zId">Node identifier to send in message. 0x00 if no node is concerned.</param>
         /// <returns>Message.</returns>
-        private static MessageDto CreateCommandMessage(MessageCommand command, DeviceDto controler, int zId = 0)
+        private static MessageDto CreateCommandMessage(MessageCommand command, DeviceDto controller, int zId = 0)
         {
             var result = new MessageDto
             {
                 Command = command,
                 IsValid = true,
-                Node = controler,
+                Node = controller,
                 ZIdentifier = (byte)zId,
                 Type = MessageType.Request,
             };

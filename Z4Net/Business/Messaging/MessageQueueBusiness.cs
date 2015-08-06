@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Z4Net.Business.Devices;
 using Z4Net.Business.Serial;
 using Z4Net.Dto.Devices;
 using Z4Net.Dto.Messaging;
@@ -20,9 +22,27 @@ namespace Z4Net.Business.Messaging
         /// </summary>
         private static MessageQueueDto Queue { get; set; }
 
+        /// <summary>
+        /// Event used to wait the end of the message process.
+        /// </summary>
+        private static readonly EventWaitHandle WaitMessageProcessing = new EventWaitHandle(true, EventResetMode.AutoReset);
+
         #endregion
 
         #region Internal methods
+
+        /// <summary>
+        /// Close messaging.
+        /// </summary>
+        internal static void Close()
+        {
+            if (Queue != null)
+            {
+                Queue.TaskContinue = false;
+                Queue.TaskLaunch = false;
+            }
+            PortBusiness.Close();
+        }
 
         /// <summary>
         /// Connect to a port.
@@ -38,7 +58,7 @@ namespace Z4Net.Business.Messaging
             port = PortBusiness.Connect(port);
 
             // initialize queue
-            Queue = new MessageQueueDto {Port = port, State = QueueState.Stop};
+            Queue = new MessageQueueDto {Port = port };
 
             // start listener
             if (Queue.TaskLaunch == false)
@@ -64,92 +84,26 @@ namespace Z4Net.Business.Messaging
         /// <summary>
         /// Send a message.
         /// </summary>
-        /// <param name="controler">Concerned controler.</param>
+        /// <param name="controller">Concerned controller.</param>
         /// <param name="message">Message to send.</param>
-        internal static void Send(ControlerDto controler, MessageDto message)
+        internal static bool Send(ControllerDto controller, MessageDto message)
         {
-            lock (Queue)
-            {
-                Queue.Messages.Enqueue(message);
-                if (Queue.State == QueueState.Stop) Task.Run(() => SendNextMessage(Queue));
-            }
-        }
+            // get serial message
+            var serialMessage = MessageBusiness.ConvertToSerial(message);
 
-        /// <summary>
-        /// Close messaging.
-        /// </summary>
-        internal static void Close()
-        {
-            if (Queue != null)
-            {
-                Queue.TaskContinue = false;
-                Queue.TaskLaunch = false;
-            }
-            PortBusiness.Close();
+            // wait for turn
+            WaitMessageProcessing.WaitOne(DeviceConstants.WaitEventTimeout);
+
+            // set processed message
+            Queue.ProcessingMessage = message;
+
+            // send message
+            return PortBusiness.Send(Queue.Port, serialMessage);
         }
 
         #endregion
 
         #region Private methods
-
-        /// <summary>
-        /// Send messages from queue for a port.
-        /// </summary>
-        /// <param name="queue">Queue to process.</param>
-        private static void SendNextMessage(MessageQueueDto queue)
-        {
-            // start queue
-            lock(queue) queue.State = QueueState.Process;
-
-            while (queue.State != QueueState.Stop)
-            {
-                var wait = false;
-                lock (queue)
-                {
-                    if (queue.Messages.Count != 0 && queue.State == QueueState.Wait)
-                    {
-                        wait = true;   
-                    }
-                    else if (queue.Messages.Count != 0)
-                    {
-                        // get message to send
-                        var message = queue.Messages.Dequeue();
-                        queue.ProcessingMessage = message;
-
-                        // send message
-                        var serialMessage = MessageBusiness.ConvertToSerial(message);
-                        PortBusiness.Send(queue.Port, serialMessage);
-
-                        // wait for message response
-                        queue.State = QueueState.Wait;
-                        wait = true;
-                    }
-                    else
-                    {
-                        queue.State = QueueState.Stop;
-                    }
-                }
-
-                if (wait) Task.Delay(MessageConstants.WaitSendTask);
-            }
-        }
-
-        /// <summary>
-        /// Send an acknowledgment.
-        /// </summary>
-        /// <param name="queue">Message queue.</param>
-        /// <param name="receivedMessage">Received message.</param>
-        private static void SendAcknowledgment(MessageQueueDto queue, MessageDto receivedMessage)
-        {
-            var message = new SerialMessageDto
-            {
-                Content = new List<byte>
-                {
-                    receivedMessage.IsValid ? (byte) MessageHeader.Acknowledgment : (byte) MessageHeader.NotAcknowledgment
-                }
-            };
-            PortBusiness.Send(queue.Port, message);
-        }
 
         /// <summary>
         /// Called when a message is received.
@@ -159,34 +113,79 @@ namespace Z4Net.Business.Messaging
         {
             while (queue.TaskContinue)
             {
-                // get serial message
+                // get message
                 var serialMessage = PortBusiness.Receive(queue.Port);
 
-                // SOF message
-                if (serialMessage.Header == MessageHeader.StartOfFrame)
+                // process
+                if (serialMessage.IsComplete)
                 {
-                    // get business message & send ACK
+                    // get message and send ack
                     var message = MessageBusiness.ConvertToMessage(serialMessage);
-                    SendAcknowledgment(queue, message);
+                    if (message.IsDataFrame) SendAcknowledgment(queue.Port, message);
 
-                    // process
-                    if (message.IsValid)
-                    {
-                        if (message.Type == MessageType.Request)
-                        {
-                            MessageBusiness.ProcessRequest(message);
-                        }
-                        else
-                        {
-                            MessageBusiness.ProcessResponse(queue.ProcessingMessage, message);
-                            lock (Queue) Queue.State = Queue.State == QueueState.Stop ? QueueState.Stop : QueueState.Process;
-                        }
-                    }
+                    // process received message
+                    if(message.IsValid) ProcessFrame(queue.ProcessingMessage, message);
                 }
 
-                // wait if no message is got
-                if (serialMessage.Size == 0) await Task.Delay(MessageConstants.WaitSendTask);
+                // round trip time
+                await Task.Delay(MessageConstants.WaitSendTask);
             }
+        }
+
+        /// <summary>
+        /// Process a start of frame (SOF).
+        /// </summary>
+        /// <param name="requestMessage">Processed message.</param>
+        /// <param name="receivedMessage">Received message.</param>
+        private static void ProcessFrame(MessageDto requestMessage, MessageDto receivedMessage)
+        {
+            // complete received message
+            if (requestMessage != null)
+            {
+                receivedMessage.Node = requestMessage.Node;
+                receivedMessage.ZIdentifier = requestMessage.ZIdentifier;
+            }
+
+            // Data frame (SOF)
+            if (receivedMessage.IsDataFrame)
+            {
+                // process response
+                if (receivedMessage.Type == MessageType.Response && requestMessage != null && requestMessage.Command == receivedMessage.Command)
+                {
+                    DevicesBusiness.ResponseReceived(receivedMessage);
+                    WaitMessageProcessing.Set(); // release message lock
+                }
+                // process request
+                else if (receivedMessage.Type == MessageType.Request && receivedMessage.Command == MessageCommand.NodeValueChanged && requestMessage != null)
+                {
+                    receivedMessage.Node = requestMessage.Node;
+                    receivedMessage.ZIdentifier = receivedMessage.Content[1];
+                    DevicesBusiness.RequestReceived(receivedMessage, (CommandClass)receivedMessage.Content[3]);
+                }
+            }
+            // ACK
+            else
+            {
+                DevicesBusiness.AcknowledgmentReceived(receivedMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Send an acknowledgment.
+        /// </summary>
+        /// <param name="port">Port to use.</param>
+        /// <param name="receivedMessage">Received message.</param>
+        private static void SendAcknowledgment(PortDto port, MessageDto receivedMessage)
+        {
+            var message = new SerialMessageDto
+            {
+                Content = new List<byte>
+                {
+                    receivedMessage.IsValid ? (byte) MessageHeader.Acknowledgment : (byte) MessageHeader.NotAcknowledgment
+                }
+            };
+            PortBusiness.Send(port, message);
         }
 
         #endregion

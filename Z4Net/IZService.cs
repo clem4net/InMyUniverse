@@ -12,29 +12,45 @@ namespace Z4Net
     {
 
         /// <summary>
-        /// Connect a controler.
+        /// Close connection.
         /// </summary>
-        /// <param name="controler">Controler to connect.</param>
-        /// <returns>Connected controler.</returns>
         [OperationContract]
-        ControlerDto Connect(ControlerDto controler);
+        void Close();
 
         /// <summary>
-        /// Get controler plugged to the system.
+        /// Configure a device.
         /// </summary>
-        /// <returns>Controler list.</returns>
+        /// <param name="controller">Controller to use.</param>
+        /// <param name="device">Device to configure.</param>
+        /// <param name="parameter">Parameter identifier.</param>
+        /// <param name="value">Parameter value.</param>
+        /// <returns>Configuration result.</returns>
+        bool Configure(ControllerDto controller, DeviceDto device, byte parameter, List<byte> value);
+
+        /// <summary>
+        /// Connect a controller.
+        /// </summary>
+        /// <param name="controller">Controller to connect.</param>
+        /// <returns>Connected controller.</returns>
         [OperationContract]
-        List<ControlerDto> GetControlers();
+        ControllerDto Connect(ControllerDto controller);
+
+        /// <summary>
+        /// Get controller plugged to the system.
+        /// </summary>
+        /// <returns>Controller list.</returns>
+        [OperationContract]
+        List<ControllerDto> GetControllers();
 
         /// <summary>
         /// Set the value of a node.
         /// </summary>
-        /// <param name="controler">Controler to use.</param>
-        /// <param name="node">Node to set.</param>
+        /// <param name="controller">Controller to use.</param>
+        /// <param name="device">Node to set.</param>
         /// <param name="value">Value to set.</param>
         /// <returns>True if value is setted, else false.</returns>
         [OperationContract]
-        bool Set(ControlerDto controler, DeviceDto node, List<byte> value);
+        bool Set(ControllerDto controller, DeviceDto device, List<byte> value);
 
     }
 }

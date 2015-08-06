@@ -46,8 +46,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Business\Devices\ConfigurationBusiness.cs" />
     <Compile Include="Business\Devices\ControllerBusiness.cs" />
     <Compile Include="Business\Devices\DevicesBusiness.cs" />
+    <Compile Include="Business\Devices\IDevice.cs" />
     <Compile Include="Business\Devices\SwitchBinaryBusiness.cs" />
     <Compile Include="Business\Messaging\MessageBusiness.cs" />
     <Compile Include="Business\Messaging\MessageQueueBusiness.cs" />

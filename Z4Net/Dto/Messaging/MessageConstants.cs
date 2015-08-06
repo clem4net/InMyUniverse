@@ -19,6 +19,6 @@
         /// <summary>
         /// Time in MS to wait between 2 loops to receive messages.
         /// </summary>
-        public static int WaitSendTask => 50;
+        public static int WaitSendTask => 75;
     }
 }

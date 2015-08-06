@@ -16,7 +16,7 @@ namespace Z4Net.Business.Serial
         /// <summary>
         /// Port used.
         /// </summary>
-        private static Dictionary<string, PortDto> Ports { get; set; }
+        private static Dictionary<string, PortDto> Ports { get; } = new Dictionary<string, PortDto>();
 
         #endregion
 
@@ -44,20 +44,14 @@ namespace Z4Net.Business.Serial
         /// <returns>Port.</returns>
         internal static PortDto Connect(PortDto port)
         {
-            if (Ports == null) Ports = new Dictionary<string, PortDto>();
-
             // search if port is already existing
             var portName = port.Name?.ToUpperInvariant() ?? string.Empty;
-            var result = Ports.Where(x => x.Key == portName).Select(x => x.Value).FirstOrDefault();
 
-            // else add new port
-            if (result == null)
-            {
-                result = new PortDto {Name = portName};
-                Ports.Add(portName, result);
-            }
+            // add port
+            if (!Ports.ContainsKey(portName)) Ports.Add(portName, new PortDto { Name = portName });
 
             // connect port
+            var result = Ports[portName];
             if (result.IsOpen == false)
             {
                 using (var ctx = new PortDtoFactory())

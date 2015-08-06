@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Z4Net.Dto.Serial;
 
 namespace Z4Net.Dto.Messaging
@@ -11,19 +10,9 @@ namespace Z4Net.Dto.Messaging
     {
 
         /// <summary>
-        /// Message queue.
-        /// </summary>
-        public Queue<MessageDto> Messages { get; } = new Queue<MessageDto>();
-
-        /// <summary>
         /// Message in process.
         /// </summary>
         public MessageDto ProcessingMessage { get; set; }
-
-        /// <summary>
-        /// State of the queue.
-        /// </summary>
-        public QueueState State { get; set; }
 
         /// <summary>
         /// Port linked to the queue.

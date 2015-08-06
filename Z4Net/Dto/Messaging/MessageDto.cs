@@ -35,6 +35,11 @@ namespace Z4Net.Dto.Messaging
         public DateTime Date { get; private set; }
 
         /// <summary>
+        /// True if message contains data. 
+        /// </summary>
+        public bool IsDataFrame { get; set;}
+
+        /// <summary>
         /// Node concerned by the message.
         /// </summary>
         public DeviceDto Node { get; set; }

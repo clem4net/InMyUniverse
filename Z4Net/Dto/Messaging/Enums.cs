@@ -9,17 +9,17 @@ namespace Z4Net.Dto.Messaging
     public enum MessageCommand
     {
         /// <summary>
-        /// Get nodes ids known by a controler.
+        /// Get nodes ids known by a controller.
         /// </summary>
-        GetControlerNodes = 0x02,
+        GetControllerNodes = 0x02,
         /// <summary>
         /// Request application command handler
         /// </summary>
         NodeValueChanged = 0x04,
         /// <summary>
-        /// Ask controler capacities.
+        /// Ask controller capacities.
         /// </summary>
-        GetControlerCapabilities = 0x05,
+        GetControllerCapabilities = 0x05,
         /// <summary>
         /// Ask serial port capacities.
         /// </summary>
@@ -41,11 +41,11 @@ namespace Z4Net.Dto.Messaging
         /// </summary>
         GetNodeProtocol = 0x041,
         /// <summary>
-        /// Request of supported classes by controler.
+        /// Request of supported classes by controller.
         /// </summary>
         ApplicationUpdate = 0x49,
         /// <summary>
-        /// Ask the SUC mode controler information.
+        /// Ask the SUC mode controller information.
         /// </summary>
         GetSucMode = 0x56
     }

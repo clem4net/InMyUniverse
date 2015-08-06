@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Z4Net.Business.Devices;
-using Z4Net.Dto.Devices;
 using Z4Net.Dto.Messaging;
 using Z4Net.Dto.Serial;
 
@@ -45,6 +43,7 @@ namespace Z4Net.Business.Messaging
 
             if (message.Header == MessageHeader.StartOfFrame)
             {
+                result.IsDataFrame = true;
                 result.IsValid = ValidMessage(message.Content);
                 if (result.IsValid && message.Content.Count > 2)
                 {
@@ -58,39 +57,13 @@ namespace Z4Net.Business.Messaging
             }
             else
             {
+                result.IsDataFrame = false;
+                result.IsValid = true;
+                result.Type = MessageType.Response;
                 result.Content = message.Content;
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Process a response message.
-        /// </summary>
-        /// <param name="sendMessage">Message send.</param>
-        /// <param name="receivedMessage">Message received.</param>
-        internal static void ProcessResponse(MessageDto sendMessage, MessageDto receivedMessage)
-        {
-            receivedMessage.Node = sendMessage.Node;
-            receivedMessage.ZIdentifier = sendMessage.ZIdentifier;
-            DevicesBusiness.ResponseReceived(sendMessage, receivedMessage);
-        }
-
-        /// <summary>
-        /// Process request message.
-        /// </summary>
-        /// <param name="receivedMessage">Message received.</param>
-        internal static void ProcessRequest(MessageDto receivedMessage)
-        {
-            var cmdClass = CommandClass.None;
-
-            if (receivedMessage.Command == MessageCommand.NodeValueChanged)
-            {
-                receivedMessage.Node = new DeviceDto { ZIdentifier = receivedMessage.Content[1] };
-                cmdClass = (CommandClass)receivedMessage.Content[3];
-            }
-
-            DevicesBusiness.RequestReceived(receivedMessage, cmdClass);
         }
 
         #endregion

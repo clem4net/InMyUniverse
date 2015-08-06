@@ -42,6 +42,28 @@ namespace Technical
         }
 
         /// <summary>
+        /// Create an instance of <typeparamref name="T"/>
+        /// </summary>
+        /// <typeparam name="T">Result type.</typeparam>
+        /// <param name="type">Type to create.</param>
+        /// <returns>Instance of <typeparamref name="T"/></returns>
+        public static T CreateInstance<T>(Type type)
+        {
+            T result;
+
+            try
+            {
+                result = (T) Activator.CreateInstance(type);
+            }
+            catch
+            {
+                result = default(T);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Get the description of a enumeration value.
         /// </summary>
         /// <typeparam name="TR">Result type.</typeparam>
