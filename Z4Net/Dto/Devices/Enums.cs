@@ -6,7 +6,7 @@ namespace Z4Net.Dto.Devices
     /// <summary>
     /// Command class to process.
     /// </summary>
-    public enum CommandClass
+    public enum RequestCommandClass
     {
         None = 0x00,
         [DataReceived(typeof(SwitchBinaryBusiness))]

@@ -19,6 +19,11 @@
         /// <summary>
         /// Time in MS to wait between 2 loops to receive messages.
         /// </summary>
-        public static int WaitSendTask => 75;
+        public static int WaitReceiveTask => 50;
+
+        /// <summary>
+        /// Time in MS befire sending ACK.
+        /// </summary>
+        public static int WaitForRoundTimeTrip => 100;
     }
 }

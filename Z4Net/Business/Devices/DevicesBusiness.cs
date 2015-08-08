@@ -4,7 +4,6 @@ using Technical;
 using Z4Net.Dto.Attributes;
 using Z4Net.Dto.Devices;
 using Z4Net.Dto.Messaging;
-using Z4Net.Dto.Serial;
 
 namespace Z4Net.Business.Devices
 {
@@ -19,15 +18,25 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Acknowledgment received.
         /// </summary>
-        /// <param name="message">Concerned message.</param>
-        internal static void AcknowledgmentReceived(MessageDto message)
+        /// <param name="messageProcessing">Message processing.</param>
+        internal static void AcknowledgmentReceived(MessageProcessDto messageProcessing)
         {
-            var processAttr = ReflectionHelper.GetEnumValueAttribute<DeviceClassGeneric, DataReceivedAttribute>(message.Node.DeviceClassGeneric);
-            if (processAttr != null)
+            IDevice iDevice = null;
+
+            // configuration command
+            if (messageProcessing.MessageTo.IsConfiguration)
             {
-                var iDevice = ReflectionHelper.CreateInstance<IDevice>(processAttr.ClassType);
-                iDevice?.AcknowlegmentReceived((MessageHeader)message.Content[0]);
+                iDevice = new ConfigurationBusiness();
             }
+            // generic response
+            else
+            {
+                var processAttr = ReflectionHelper.GetEnumValueAttribute<DeviceClassGeneric, DataReceivedAttribute>(messageProcessing.MessageTo.Node.DeviceClassGeneric);
+                if (processAttr != null) iDevice = ReflectionHelper.CreateInstance<IDevice>(processAttr.ClassType);
+            }
+
+            // execute
+            iDevice?.AcknowlegmentReceived(messageProcessing.MessageFrom);
         }
 
         /// <summary>
@@ -106,41 +115,44 @@ namespace Z4Net.Business.Devices
         /// Process a received message.
         /// Dispatch message to concerned device.
         /// </summary>
-        /// <param name="response">Message received.</param>
+        /// <param name="messageProcessing">Message process.</param>
         /// <returns>Next state of request message.</returns>
-        internal static void ResponseReceived(MessageDto response)
+        internal static void ResponseReceived(MessageProcessDto messageProcessing)
         {
-            if (response?.Node != null)
+            IDevice iDevice = null;
+
+            // configuration command
+            if (messageProcessing.MessageTo.IsConfiguration)
             {
-                var processAttr = ReflectionHelper.GetEnumValueAttribute<DeviceClassGeneric, DataReceivedAttribute>(response.Node.DeviceClassGeneric);
-                if (processAttr != null)
-                {
-                    var iDevice = ReflectionHelper.CreateInstance<IDevice>(processAttr.ClassType);
-                    iDevice?.ResponseReceived(response);
-                }
+                iDevice = new ConfigurationBusiness();
             }
+            // generic response
+            else
+            {
+                var processAttr = ReflectionHelper.GetEnumValueAttribute<DeviceClassGeneric, DataReceivedAttribute>(messageProcessing.MessageFrom.Node.DeviceClassGeneric);
+                if (processAttr != null) iDevice = ReflectionHelper.CreateInstance<IDevice>(processAttr.ClassType);
+            }
+
+            // execute
+            iDevice?.ResponseReceived(messageProcessing.MessageFrom);
         }
 
         /// <summary>
         /// Process a request received.
         /// </summary>
         /// <param name="received">Recevied message.</param>
-        /// <param name="commandClass">Cillabd ckass?</param>
         /// <returns>Process state.</returns>
-        internal static void RequestReceived(MessageDto received, CommandClass commandClass)
+        internal static void RequestReceived(MessageFromDto received)
         {
-            if (received != null && commandClass != CommandClass.None)
+            // process request
+            var processAttr = ReflectionHelper.GetEnumValueAttribute<RequestCommandClass, DataReceivedAttribute>(received.RequestCommand);
+            if (processAttr != null)
             {
-                // process request
-                var processAttr = ReflectionHelper.GetEnumValueAttribute<CommandClass, DataReceivedAttribute>(commandClass);
-                if (processAttr != null)
-                {
-                    var iDevice = ReflectionHelper.CreateInstance<IDevice>(processAttr.ClassType);
-                    iDevice?.RequestRecevied(received);
-                }
+                var iDevice = ReflectionHelper.CreateInstance<IDevice>(processAttr.ClassType);
+                iDevice?.RequestRecevied(received);
             }
         }
- 
+
         /// <summary>
         /// Basic set action.
         /// </summary>

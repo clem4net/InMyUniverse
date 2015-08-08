@@ -5,7 +5,7 @@ namespace Z4Net.Dto.Serial
     /// <summary>
     /// Serial message.
     /// </summary>
-    public class SerialMessageDto
+    public class MessageDto
     {
         /// <summary>
         /// Current message received.

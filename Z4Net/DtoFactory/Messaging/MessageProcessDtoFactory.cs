@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Z4Net.Dto.Devices;
 using Z4Net.Dto.Messaging;
 using Z4Net.Dto.Serial;
 
-namespace Z4Net.Business.Messaging
+namespace Z4Net.DtoFactory.Messaging
 {
     /// <summary>
-    /// Message business.
+    /// Message factory.
     /// </summary>
-    internal static class MessageBusiness
+    public class MessageProcessDtoFactory : IDisposable
     {
 
         #region Internal methods
@@ -18,10 +20,10 @@ namespace Z4Net.Business.Messaging
         /// </summary>
         /// <param name="message">Message.</param>
         /// <returns>Message frame.</returns>
-        internal static SerialMessageDto ConvertToSerial(MessageDto message)
+        public MessageDto Convert(MessageToDto message)
         {
             var content = CreateFrame(message);
-            var result = new SerialMessageDto
+            var result = new MessageDto
             {
                 Header = (MessageHeader)content[0],
                 Content = content,
@@ -37,33 +39,45 @@ namespace Z4Net.Business.Messaging
         /// </summary>
         /// <param name="message">Serial message.</param>
         /// <returns>Business message.</returns>
-        internal static MessageDto ConvertToMessage(SerialMessageDto message)
+        public MessageFromDto Convert(MessageDto message)
         {
-            var result = new MessageDto();
-
+            var result = new MessageFromDto {Header = message.Header};
+            
             if (message.Header == MessageHeader.StartOfFrame)
             {
-                result.IsDataFrame = true;
                 result.IsValid = ValidMessage(message.Content);
-                if (result.IsValid && message.Content.Count > 2)
+                if (result.IsValid && message.Content.Count > 3)
                 {
                     result.Type = (MessageType)message.Content[2];
-                    if (message.Content.Count > 4)
+                    result.Command = (MessageCommand)message.Content[3];
+
+                    if (result.Type == MessageType.Request && message.Content.Count > 8)
                     {
-                        result.Command = (MessageCommand)message.Content[3];
+                        result.ZIdentifier = message.Content[5];
+                        result.RequestCommand = (RequestCommandClass) message.Content[7];
+                        result.Content = message.Content.Skip(8).Take(message.Content[6] - 1).ToList();
+                    }
+                    else if (message.Content.Count > 4)
+                    {
                         result.Content = message.Content.Skip(4).Take(message.Content.Count - 5).ToList();
                     }
                 }
             }
             else
             {
-                result.IsDataFrame = false;
                 result.IsValid = true;
                 result.Type = MessageType.Response;
                 result.Content = message.Content;
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Dispose.
+        /// </summary>
+        public void Dispose()
+        {
         }
 
         #endregion
@@ -75,7 +89,7 @@ namespace Z4Net.Business.Messaging
         /// </summary>
         /// <param name="message">Original message.</param>
         /// <returns>Message.</returns>
-        private static List<byte> CreateFrame(MessageDto message)
+        private static List<byte> CreateFrame(MessageToDto message)
         {
             var result = new List<byte>
             {
@@ -91,8 +105,8 @@ namespace Z4Net.Business.Messaging
             }
 
             result.AddRange(message.Content);
-            result.Add((byte) (TransmitOptions.Acknowlegment | TransmitOptions.Explore | TransmitOptions.NoRoute));
-            result[1] = (byte) (result.Count - 1);
+            result.Add((byte)(TransmitOptions.Acknowlegment | TransmitOptions.Explore | TransmitOptions.NoRoute));
+            result[1] = (byte)(result.Count - 1);
             result.Add(GenerateChecksum(result));
 
             return result;

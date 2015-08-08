@@ -6,7 +6,6 @@ using System.Threading;
 using Z4Net.Business.Messaging;
 using Z4Net.Dto.Devices;
 using Z4Net.Dto.Messaging;
-using Z4Net.Dto.Serial;
 
 namespace Z4Net.Business.Devices
 {
@@ -37,7 +36,7 @@ namespace Z4Net.Business.Devices
         /// </summary>
         internal static void Close()
         {
-            MessageQueueBusiness.Close();
+            MessageProcessBusiness.Close();
         }
 
         /// <summary>
@@ -47,22 +46,23 @@ namespace Z4Net.Business.Devices
         internal static List<ControllerDto> List()
         {
             // get existing ports
-            var ports = MessageQueueBusiness.ListPorts();
+            var ports = MessageProcessBusiness.ListPorts();
 
             // try to connect
             var result = new List<ControllerDto>();
             foreach (var p in ports)
             {
-                var initPort = MessageQueueBusiness.Connect(p);
-                if (initPort.IsOpen)
+                var controller = new ControllerDto
                 {
-                    var controller = new ControllerDto
-                    {
-                        DeviceClass = DeviceClass.StaticController,
-                        DeviceClassGeneric = DeviceClassGeneric.StaticController,
-                        Port = p
-                    };
+                    DeviceClass = DeviceClass.StaticController,
+                    DeviceClassGeneric = DeviceClassGeneric.StaticController,
+                    Port = p
+                };
 
+                // connect port
+                controller = MessageProcessBusiness.Connect(controller);
+                if (controller.Port.IsOpen)
+                {
                     // get home id to valid controller
                     controller.IsReady = GetHomeId(controller);
                     if (controller.IsReady)
@@ -72,7 +72,7 @@ namespace Z4Net.Business.Devices
                     }
                 }
 
-                MessageQueueBusiness.Close();
+                MessageProcessBusiness.Close(controller.Port);
             }
 
             return result;
@@ -86,13 +86,11 @@ namespace Z4Net.Business.Devices
         internal static ControllerDto Connect(ControllerDto controller)
         {
             // open port
-            controller.Port = MessageQueueBusiness.Connect(controller.Port);
+            controller = MessageProcessBusiness.Connect(controller);
 
             if (controller.Port.IsOpen)
             {
-                controller.IsReady = GetZVersion(controller);
-                if (controller.IsReady) controller.IsReady = GetHomeId(controller);
-                if (controller.IsReady) controller.IsReady = GetApiCapabilities(controller);
+                controller.IsReady = GetHomeId(controller);
                 if (controller.IsReady) controller.IsReady = GetControllerNodes(controller);
                 if (controller.IsReady)
                 {
@@ -140,7 +138,8 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Acknowlegment received.
         /// </summary>
-        public void AcknowlegmentReceived(MessageHeader ack)
+        /// <param name="receivedMessage">Received message.</param>
+        public void AcknowlegmentReceived(MessageFromDto receivedMessage)
         {
             WaitAcknowledgment.Set();
         }
@@ -149,7 +148,7 @@ namespace Z4Net.Business.Devices
         /// A response a received from node.
         /// </summary>
         /// <param name="resposne">Response message.</param>
-        public void ResponseReceived(MessageDto resposne)
+        public void ResponseReceived(MessageFromDto resposne)
         {
             if (resposne?.Node != null)
             {
@@ -180,7 +179,7 @@ namespace Z4Net.Business.Devices
         /// A request is recevied from node.
         /// </summary>
         /// <param name="request">Received message.</param>
-        public void RequestRecevied(MessageDto request)
+        public void RequestRecevied(MessageFromDto request)
         {
             // Not used
         }
@@ -197,7 +196,7 @@ namespace Z4Net.Business.Devices
         private static bool GetHomeId(ControllerDto controller)
         {
             // send message
-            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetHomeId, controller)))
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetHomeId, controller)))
             {
                 // wait for ack and response
                 WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
@@ -213,7 +212,7 @@ namespace Z4Net.Business.Devices
         /// </summary>
         /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetHomeIdResponse(ControllerDto controller, MessageDto receivedMessage)
+        private static void GetHomeIdResponse(ControllerDto controller, MessageFromDto receivedMessage)
         {
             // complete controller
             if (receivedMessage.Content.Count >= 5)
@@ -235,7 +234,7 @@ namespace Z4Net.Business.Devices
         private static bool GetZVersion(ControllerDto controller)
         {
             // send message
-            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetVersion, controller)))
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetVersion, controller)))
             {
                 // wait for ack and response
                 WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
@@ -251,7 +250,7 @@ namespace Z4Net.Business.Devices
         /// </summary>
         /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetZVersionResponse(ControllerDto controller, MessageDto receivedMessage)
+        private static void GetZVersionResponse(ControllerDto controller, MessageFromDto receivedMessage)
         {
             // complete controller
             if (receivedMessage.Content.Count >= 3)
@@ -275,7 +274,7 @@ namespace Z4Net.Business.Devices
         private static bool GetApiCapabilities(ControllerDto controller)
         {
             // send message
-            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetApiCapabilities, controller)))
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetApiCapabilities, controller)))
             {
                 // wait for ack and response
                 WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
@@ -293,7 +292,7 @@ namespace Z4Net.Business.Devices
         /// </summary>
         /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetApiCapabilitiesResponse(ControllerDto controller, MessageDto receivedMessage)
+        private static void GetApiCapabilitiesResponse(ControllerDto controller, MessageFromDto receivedMessage)
         {
             if (receivedMessage.Content.Count >= 6)
             {
@@ -320,7 +319,7 @@ namespace Z4Net.Business.Devices
         private static bool GetControllerNodes(ControllerDto controller)
         {
             // send message
-            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetControllerNodes, controller)))
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetControllerNodes, controller)))
             {
                 // wait for response
                 WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
@@ -339,7 +338,7 @@ namespace Z4Net.Business.Devices
         /// </summary>
         /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetControllerNodesResponse(ControllerDto controller, MessageDto receivedMessage)
+        private static void GetControllerNodesResponse(ControllerDto controller, MessageFromDto receivedMessage)
         {
             if (receivedMessage.Content.Count >= 29)
             {
@@ -378,7 +377,7 @@ namespace Z4Net.Business.Devices
         private static bool GetNodeProtocol(ControllerDto controller, DeviceDto node)
         {
             // send message
-            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetNodeProtocol, controller, node.ZIdentifier)))
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetNodeProtocol, controller, node.ZIdentifier)))
             {
                 // wait for response
                 WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
@@ -395,7 +394,7 @@ namespace Z4Net.Business.Devices
         /// </summary>
         /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetNodeProtocolResponse(ControllerDto controller, MessageDto receivedMessage)
+        private static void GetNodeProtocolResponse(ControllerDto controller, MessageFromDto receivedMessage)
         {
             if (receivedMessage.Content.Count >= 5)
             {
@@ -419,9 +418,9 @@ namespace Z4Net.Business.Devices
         /// <param name="command">Command to process.</param>
         /// <param name="zId">Node identifier to send in message. 0x00 if no node is concerned.</param>
         /// <returns>Message.</returns>
-        private static MessageDto CreateCommandMessage(MessageCommand command, DeviceDto controller, int zId = 0)
+        private static MessageToDto CreateCommandMessage(MessageCommand command, DeviceDto controller, int zId = 0)
         {
-            var result = new MessageDto
+            var result = new MessageToDto
             {
                 Command = command,
                 IsValid = true,

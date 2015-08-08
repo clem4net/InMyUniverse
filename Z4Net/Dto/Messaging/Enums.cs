@@ -73,23 +73,4 @@ namespace Z4Net.Dto.Messaging
         Explore = 0x20
     }
 
-    /// <summary>
-    /// States of send queue.
-    /// </summary>
-    public enum QueueState
-    {
-        /// <summary>
-        /// Take next message.
-        /// </summary>
-        Process = 0,
-        /// <summary>
-        /// Wait for end of proces of last sent message.
-        /// </summary>
-        Wait = 1,
-        /// <summary>
-        /// No more message, stop the queue.
-        /// </summary>
-        Stop = 2
-    }
-
 }

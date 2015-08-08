@@ -25,13 +25,21 @@ namespace Z4Net.Business.Serial
         /// <summary>
         /// Close all ports.
         /// </summary>
-        internal static void Close()
+        /// <param name="port">Optional port to close. If null, close all ports.</param>
+        internal static void Close(PortDto port = null)
         {
             if (Ports != null)
             {
                 using (var ctx = new PortDtoFactory())
                 {
-                    Ports.Values.ToList().ForEach(x => ctx.Close(x));
+                    if (port == null)
+                    {
+                        Ports.Values.ToList().ForEach(x => ctx.Close(x));
+                    }
+                    else
+                    {
+                        ctx.Close(port);
+                    }
                 }
                 Ports.Clear();
             }
@@ -44,20 +52,29 @@ namespace Z4Net.Business.Serial
         /// <returns>Port.</returns>
         internal static PortDto Connect(PortDto port)
         {
+            PortDto result;
+
             // search if port is already existing
             var portName = port.Name?.ToUpperInvariant() ?? string.Empty;
 
-            // add port
-            if (!Ports.ContainsKey(portName)) Ports.Add(portName, new PortDto { Name = portName });
-
-            // connect port
-            var result = Ports[portName];
-            if (result.IsOpen == false)
+            if (!string.IsNullOrEmpty(portName))
             {
-                using (var ctx = new PortDtoFactory())
+                // add port
+                if (!Ports.ContainsKey(portName)) Ports.Add(portName, new PortDto {Name = portName});
+
+                // connect port
+                result = Ports[portName];
+                if (result.IsOpen == false)
                 {
-                    result = ctx.Connect(result);
+                    using (var ctx = new PortDtoFactory())
+                    {
+                        result = ctx.Connect(result);
+                    }
                 }
+            }
+            else
+            {
+                result = new PortDto();
             }
 
             return result;
@@ -83,9 +100,9 @@ namespace Z4Net.Business.Serial
         /// </summary>
         /// <param name="port">Port to use.</param>
         /// <return>Received message.</return>
-        internal static SerialMessageDto Receive(PortDto port)
+        internal static MessageDto Receive(PortDto port)
         {
-            SerialMessageDto result;
+            MessageDto result;
             do
             {
                 using (var ctx = new PortDtoFactory())
@@ -103,7 +120,7 @@ namespace Z4Net.Business.Serial
         /// <param name="port">Port to use containing message.</param>
         /// <param name="message">Message to send.</param>
         /// <returns>Send result.</returns>
-        internal static bool Send(PortDto port, SerialMessageDto message)
+        internal static bool Send(PortDto port, MessageDto message)
         {
             bool result;
 

@@ -19,7 +19,7 @@ namespace Z4Net.Dto.Serial
         /// <summary>
         /// Message received.
         /// </summary>
-        public SerialMessageDto ReceiveMessage { get; set; } = new SerialMessageDto();
+        public MessageDto ReceiveMessage { get; set; } = new MessageDto();
 
         /// <summary>
         /// True if port is open.

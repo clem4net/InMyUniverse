@@ -31,19 +31,20 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Acknowlegment received.
         /// </summary>
-        void AcknowlegmentReceived(MessageHeader ack);
+        /// <param name="message">Received message.</param>
+        void AcknowlegmentReceived(MessageFromDto message);
 
         /// <summary>
         /// A response a received from node.
         /// </summary>
         /// <param name="resposne">Response message.</param>
-        void ResponseReceived(MessageDto resposne);
+        void ResponseReceived(MessageFromDto resposne);
 
         /// <summary>
         /// A request is recevied from node.
         /// </summary>
         /// <param name="request">Received message.</param>
-        void RequestRecevied(MessageDto request);
+        void RequestRecevied(MessageFromDto request);
 
     }
 }

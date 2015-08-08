@@ -92,14 +92,14 @@ namespace Z4Net.DtoFactory.Serial
         /// </summary>
         /// <param name="port">Port to use.</param>
         /// <returns>Completed message.</returns>
-        public SerialMessageDto Receive(PortDto port)
+        public MessageDto Receive(PortDto port)
         {
             ReadBytes(port.RawPort).ForEach(port.ReadBuffer.Enqueue);
 
             // reinitialize message
             if (port.ReceiveMessage.IsComplete)
             {
-                port.ReceiveMessage = new SerialMessageDto();
+                port.ReceiveMessage = new MessageDto();
             }
 
             // complete message
@@ -117,7 +117,7 @@ namespace Z4Net.DtoFactory.Serial
         /// <param name="port">Port to use.</param>
         /// <param name="message">Message to send.</param>
         /// <returns>Send result.</returns>
-        public bool Send(PortDto port, SerialMessageDto message)
+        public bool Send(PortDto port, MessageDto message)
         {
             bool result;
 
@@ -177,7 +177,7 @@ namespace Z4Net.DtoFactory.Serial
         /// </summary>
         /// <param name="port">Port to use.</param>
         /// <returns>Recevied message.</returns>
-        private SerialMessageDto BuildMessage(PortDto port)
+        private MessageDto BuildMessage(PortDto port)
         {
             var buffer = port.ReadBuffer;
             var message = port.ReceiveMessage;

@@ -36,6 +36,14 @@ namespace Z4Net
         ControllerDto Connect(ControllerDto controller);
 
         /// <summary>
+        /// Get device value.
+        /// </summary>
+        /// <param name="controller">Concerned controller.</param>
+        /// <param name="device">Concerned node.</param>
+        /// <returns>True if value is got..</returns>
+        bool Get(ControllerDto controller, DeviceDto device);
+
+        /// <summary>
         /// Get controller plugged to the system.
         /// </summary>
         /// <returns>Controller list.</returns>

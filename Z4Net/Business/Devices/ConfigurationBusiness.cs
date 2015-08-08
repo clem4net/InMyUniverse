@@ -4,7 +4,6 @@ using System.Threading;
 using Z4Net.Business.Messaging;
 using Z4Net.Dto.Devices;
 using Z4Net.Dto.Messaging;
-using Z4Net.Dto.Serial;
 
 namespace Z4Net.Business.Devices
 {
@@ -54,7 +53,7 @@ namespace Z4Net.Business.Devices
             content.AddRange(value.Skip(1).ToList());
 
             // send message
-            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(device, content)))
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(device, content)))
             {
                 // wait for ack and response
                 WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
@@ -67,7 +66,8 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Acknowlegment received.
         /// </summary>
-        public void AcknowlegmentReceived(MessageHeader ack)
+        /// <param name="receivedMessage">Recevied message.</param>
+        public void AcknowlegmentReceived(MessageFromDto receivedMessage)
         {
             WaitAcknowledgment.Set();
         }
@@ -76,7 +76,7 @@ namespace Z4Net.Business.Devices
         /// A response a received from node.
         /// </summary>
         /// <param name="resposne">Response message.</param>
-        public void ResponseReceived(MessageDto resposne)
+        public void ResponseReceived(MessageFromDto resposne)
         {
             WaitEvent.Set();
         }
@@ -85,7 +85,7 @@ namespace Z4Net.Business.Devices
         /// A request is recevied from node.
         /// </summary>
         /// <param name="request">Received message.</param>
-        public void RequestRecevied(MessageDto request)
+        public void RequestRecevied(MessageFromDto request)
         {
         }
 
@@ -103,7 +103,7 @@ namespace Z4Net.Business.Devices
             content.AddRange(value);
 
             // send message
-            if (MessageQueueBusiness.Send(controller, CreateCommandMessage(node, content)))
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(node, content)))
             {
                 // wait for ack and response
                 WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
@@ -123,12 +123,13 @@ namespace Z4Net.Business.Devices
         /// <param name="node">Concerned node.</param>
         /// <param name="content">Content to send.</param>
         /// <returns>Message.</returns>
-        private static MessageDto CreateCommandMessage(DeviceDto node, List<byte> content)
+        private static MessageToDto CreateCommandMessage(DeviceDto node, List<byte> content)
         {
-            var result = new MessageDto
+            var result = new MessageToDto
             {
                 Command = MessageCommand.SendData,
-                Content = new List<byte> { (byte)CommandClass.Configuration },
+                Content = new List<byte> { (byte)RequestCommandClass.Configuration },
+                IsConfiguration = true,
                 IsValid = true,
                 Node = node,
                 Type = MessageType.Request,

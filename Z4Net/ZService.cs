@@ -45,6 +45,17 @@ namespace Z4Net
         }
 
         /// <summary>
+        /// Get device value.
+        /// </summary>
+        /// <param name="controller">Concerned controller.</param>
+        /// <param name="device">Concerned node.</param>
+        /// <returns>True if value is got.</returns>
+        public bool Get(ControllerDto controller, DeviceDto device)
+        {
+            return DevicesBusiness.Get(controller, device);
+        }
+
+        /// <summary>
         /// Get controller plugged to the system.
         /// </summary>
         /// <returns>Controller list.</returns>
