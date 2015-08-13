@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.IO.Ports;
+using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Z4Net.Dto.Devices;
-using Z4Net.Dto.Serial;
+using Z4Net.Dto.Services;
 
 namespace Z4Net.Tests
 {
@@ -52,131 +52,55 @@ namespace Z4Net.Tests
         [TestMethod]
         public void Configure_Nominal()
         {
-            // Initialize
-            var controller = Service.GetControllers().FirstOrDefault();
-            if (controller == null) return;
-            controller = Service.Connect(controller);
-            Assert.IsTrue(controller.IsReady);
-            if (controller.Nodes.Count == 0) return;
-            var node = controller.Nodes.FirstOrDefault(x => x.DeviceClassGeneric == DeviceClassGeneric.SwitchBinary);
-            if (node == null) return;
+            //// Initialize
+            //var controller = Service.GetControllers().FirstOrDefault();
+            //if (controller == null) return;
+            //controller = Service.Connect(controller);
+            //Assert.IsTrue(controller.IsReady);
+            //if (controller.Nodes.Count == 0) return;
+            //var node = controller.Nodes.FirstOrDefault(x => x.DeviceClassGeneric == DeviceClassGeneric.SwitchBinary);
+            //if (node == null) return;
 
-            // Execute
-            var test = Service.Configure(controller, node, 0x04, new List<byte> {15});
-            Assert.IsTrue(test);
+            //// Execute
+            //var test = Service.Configure(controller, node, 0x04, new List<byte> {15});
+            //Assert.IsTrue(test);
 
-            // Test
-            test = Service.Set(controller, node, new List<byte> { 0xFF });
-            Assert.IsTrue(test);
-            Assert.AreEqual(node.Value, "FF");
-            Thread.Sleep(1500);
-            test = Service.Get(controller, node);
-            Assert.IsTrue(test);
-            Assert.AreEqual(node.Value, "00");
+            //// Test
+            //test = Service.Set(controller, node, new List<byte> { 0xFF });
+            //Assert.IsTrue(test);
+            //Assert.AreEqual(node.Value, "FF");
+            //Thread.Sleep(1500);
+            //test = Service.Get(controller, node);
+            //Assert.IsTrue(test);
+            //Assert.AreEqual(node.Value, "00");
 
-            // Clean
-            Service.Configure(controller, node, 0x04, new List<byte> { 0 });
-            Service.Close();
+            //// Clean
+            //Service.Configure(controller, node, 0x04, new List<byte> { 0 });
+            //Service.Close();
         }
 
         #endregion
 
-        #region Connect
+        #region GetNodes
 
         /// <summary>
-        /// Connect to controller in nominal case.
+        /// Get node list.
         /// </summary>
         [TestMethod]
-        public void Connect_Nominal()
-        {
-            // Initialize
-            var controller = Service.GetControllers().FirstOrDefault();
-            if (controller == null) return;
-
-            // Execute
-            var test = Service.Connect(controller);
-
-            // Test
-            Assert.IsTrue(test.IsReady);
-            Assert.IsFalse(string.IsNullOrEmpty(test.HomeIdentifier));
-            Assert.IsNotNull(test.Nodes);
-
-            // Clean
-            Service.Close();
-        }
-
-        /// <summary>
-        /// Test to connect with a bad controller.
-        /// </summary>
-        [TestMethod]
-        public void Connect_BadController()
-        {
-            // Initialize
-            var controller = new ControllerDto
-            {
-                Port = new PortDto { Name = "COM1000" },
-                DeviceClass = DeviceClass.StaticController,
-                DeviceClassGeneric = DeviceClassGeneric.StaticController
-            };
-
-            // Execute
-            var test = Service.Connect(controller);
-
-            // Test
-            Assert.IsFalse(test.IsReady);
-            Assert.IsTrue(string.IsNullOrEmpty(test.ZVersion));
-
-            // Clean
-            Service.Close();
-        }
-
-        /// <summary>
-        /// Try to connect with null arguments.
-        /// </summary>
-        [TestMethod]
-        public void Connect_Error()
-        {
-            // Execute & test
-            var test = Service.Connect(null);
-            Assert.IsFalse(test.IsReady);
-
-            // Execute & test
-            test = Service.Connect(new ControllerDto());
-            Assert.IsFalse(test.IsReady);
-
-            // Execute & test
-            test = Service.Connect(new ControllerDto { Port = new PortDto() });
-            Assert.IsFalse(test.IsReady);
-        }
-
-        #endregion
-
-        #region GetControllers
-
-        /// <summary>
-        /// Test to get the list of controllers.
-        /// </summary>
-        [TestMethod]
-        public void GetControllers_Nominal()
+        public void GetNodes_Nominal()
         {
             // Initialize
             var ports = SerialPort.GetPortNames();
+            if (ports.Length == 0) return;
 
             // Execute
-            var test = Service.GetControllers();
+            var test = Service.GetNodes();
 
             // Test
-            Assert.AreEqual(test.Count, ports.Length);
-            if (test.Count != 0)
-            {
-                foreach (var p in ports)
-                {
-                    var testPort = test.FirstOrDefault(x => x.Port.Name == p);
-                    Assert.IsNotNull(testPort);
-                    Assert.IsFalse(string.IsNullOrEmpty(testPort.HomeIdentifier));
-                    Assert.AreNotEqual(testPort.ZIdentifier, 0);
-                }
-            }
+            Assert.AreNotEqual(test.Count, 0);
+
+            // clean
+            Service.Close();
         }
 
         #endregion
@@ -190,55 +114,21 @@ namespace Z4Net.Tests
         public void Set_Nominal()
         {
             // Initialize
-            var controller = Service.GetControllers().FirstOrDefault();
-            if (controller == null) return;
-            controller = Service.Connect(controller);
-            Assert.IsTrue(controller.IsReady);
-            if (controller.Nodes.Count == 0) return;
-            var node = controller.Nodes.FirstOrDefault(x => x.DeviceClassGeneric == DeviceClassGeneric.SwitchBinary);
-            if (node == null) return;
-            var conf = Service.Configure(controller, node, 0x04, new List<byte> { 0 });
-            Assert.IsTrue(conf);
+            var nodes = Service.GetNodes();
+            var switchNode = nodes.FirstOrDefault(x => x.Type == DeviceClassGeneric.SwitchBinary);
+            if (switchNode == null) return;
 
             // Execute
-            var value = new List<byte> {0xFF};
-            var test = Service.Set(controller, node, value);
-            
+            switchNode.Value = new List<byte> { 0xFF };
+            var test = Service.Set(switchNode);
+
             // Test
             Assert.IsTrue(test);
-            Assert.AreEqual(node.Value, "FF");
-            Assert.IsTrue(Service.Get(controller, node));
-            Assert.AreEqual(node.Value, "FF");
 
             // Clean
             Thread.Sleep(500);
-            Service.Set(controller, node, new List<byte> {0x00});
-            Service.Close();
-        }
-
-        /// <summary>
-        /// Set a value to a non connected controller.
-        /// </summary>
-        [TestMethod]
-        public void Set_BadController()
-        {
-            // Initialize
-            var controller = Service.GetControllers().FirstOrDefault();
-            if (controller == null) return;
-
-            // Execute
-            var test = Service.Set(controller,
-                new DeviceDto
-                {
-                    DeviceClass = DeviceClass.StaticController,
-                    DeviceClassGeneric = DeviceClassGeneric.StaticController,
-                    ZIdentifier = 2
-                }, new List<byte> {0xFF});
-
-            // Test
-            Assert.IsFalse(test);
-
-            // Clean
+            switchNode.Value = new List<byte> { 0x00 };
+            Service.Set(switchNode);
             Service.Close();
         }
 
@@ -249,19 +139,11 @@ namespace Z4Net.Tests
         public void Set_Error()
         {
             // Execute & test
-            var test = Service.Set(null, null, null);
+            var test = Service.Set(null);
             Assert.IsFalse(test);
 
             // Execute & test
-            test = Service.Set(new ControllerDto(), null, null);
-            Assert.IsFalse(test);
-
-            // Execute & test
-            test = Service.Set(new ControllerDto(), new DeviceDto(), null);
-            Assert.IsFalse(test);
-
-            // Execute & test
-            test = Service.Set(new ControllerDto(), new DeviceDto(), new List<byte>());
+            test = Service.Set(new NodeDto());
             Assert.IsFalse(test);
         }
 

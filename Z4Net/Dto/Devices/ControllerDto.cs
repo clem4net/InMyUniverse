@@ -8,7 +8,6 @@ namespace Z4Net.Dto.Devices
     /// <summary>
     /// Controller description.
     /// </summary>
-    [DataContract]
     public class ControllerDto : DeviceDto
     {
 
@@ -22,7 +21,6 @@ namespace Z4Net.Dto.Devices
         /// True if controller of the port is initialized.
         /// </summary>
         [XmlIgnore]
-        [DataMember]
         public bool IsReady { get; set; }
 
         /// <summary>
@@ -34,13 +32,11 @@ namespace Z4Net.Dto.Devices
         /// <summary>
         /// List of nodes Z nodes linked to the controller.
         /// </summary>
-        [DataMember]
         public List<DeviceDto> Nodes { get; set; } = new List<DeviceDto>();
 
         /// <summary>
         /// Port of the controller.
         /// </summary>
-        [DataMember]
         public PortDto Port { get; set; }
 
         /// <summary>

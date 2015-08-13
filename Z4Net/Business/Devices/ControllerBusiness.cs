@@ -34,9 +34,11 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Close controller.
         /// </summary>
-        internal static void Close()
+        /// <param name="controller">Controller to close.</param>
+        internal static void Close(ControllerDto controller)
         {
-            MessageProcessBusiness.Close();
+            MessageProcessBusiness.Close(controller.Port);
+            controller.IsReady = false;
         }
 
         /// <summary>
@@ -48,64 +50,19 @@ namespace Z4Net.Business.Devices
             // get existing ports
             var ports = MessageProcessBusiness.ListPorts();
 
-            // try to connect
-            var result = new List<ControllerDto>();
-            foreach (var p in ports)
-            {
-                var controller = new ControllerDto
+            // get controllers
+            var controllers = from p in ports
+                let ctrl = new ControllerDto
                 {
                     DeviceClass = DeviceClass.StaticController,
                     DeviceClassGeneric = DeviceClassGeneric.StaticController,
                     Port = p
-                };
-
-                // connect port
-                controller = MessageProcessBusiness.Connect(controller);
-                if (controller.Port.IsOpen)
-                {
-                    // get home id to valid controller
-                    controller.IsReady = GetHomeId(controller);
-                    if (controller.IsReady)
-                    {
-                        controller.IsReady = false;
-                        result.Add(controller);
-                    }
                 }
+                let ctrlCon = Connect(ctrl)
+                where ctrlCon.IsReady
+                select ctrlCon;
 
-                MessageProcessBusiness.Close(controller.Port);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Initialize the controller on specified port.
-        /// </summary>
-        /// <param name="controller">Port to initialize.</param>
-        /// <returns>Controller of the port.</returns>
-        internal static ControllerDto Connect(ControllerDto controller)
-        {
-            // open port
-            controller = MessageProcessBusiness.Connect(controller);
-
-            if (controller.Port.IsOpen)
-            {
-                controller.IsReady = GetHomeId(controller);
-                if (controller.IsReady) controller.IsReady = GetControllerNodes(controller);
-                if (controller.IsReady)
-                {
-                    foreach (var x in controller.Nodes)
-                    {
-                        controller.IsReady = GetNodeProtocol(controller, x);
-                    }
-                }
-            }
-            else
-            {
-                controller.IsReady = false;
-            }
-
-            return controller;
+            return controllers.ToList();
         }
 
         #endregion
@@ -187,6 +144,37 @@ namespace Z4Net.Business.Devices
         #endregion
 
         #region Private methods
+
+        /// <summary>
+        /// Initialize the controller on specified port.
+        /// </summary>
+        /// <param name="controller">Port to initialize.</param>
+        /// <returns>Controller of the port.</returns>
+        private static ControllerDto Connect(ControllerDto controller)
+        {
+            // open port
+            controller = MessageProcessBusiness.Connect(controller);
+
+            if (controller.Port.IsOpen)
+            {
+                controller.IsReady = GetHomeId(controller);
+                if (controller.IsReady) controller.IsReady = GetControllerNodes(controller);
+                if (controller.IsReady)
+                {
+                    foreach (var x in controller.Nodes)
+                    {
+                        controller.IsReady = GetNodeProtocol(controller, x);
+                    }
+                }
+            }
+            else
+            {
+                controller.IsReady = false;
+            }
+
+            return controller;
+        }
+
 
         /// <summary>
         /// Get the controller home identifier.

@@ -31,8 +31,8 @@ namespace Z4Net.Business.Messaging
         /// <summary>
         /// Close messaging.
         /// </summary>
-        /// <param name="port">Optional port to close. If null, close all ports.</param>
-        internal static void Close(PortDto port = null)
+        /// <param name="port">Port to close..</param>
+        internal static void Close(PortDto port)
         {
             if (Queue != null)
             {
@@ -50,7 +50,7 @@ namespace Z4Net.Business.Messaging
         internal static ControllerDto Connect(ControllerDto controller)
         {
             // close existing port
-            Close();
+            Close(controller.Port);
 
             // connect port
             controller.Port = PortBusiness.Connect(controller.Port);

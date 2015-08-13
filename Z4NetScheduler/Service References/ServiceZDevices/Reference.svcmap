@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="af93709c-23a6-41a5-8ced-add333539397" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings>
+      <CollectionMapping TypeName="System.Collections.Generic.List`1" Category="List" />
+    </CollectionMappings>
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:8733/Design_Time_Addresses/Z4Net.Services/IZDeviceService/mex" Protocol="mex" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="service.wsdl" MetadataType="Wsdl" ID="5ee7a440-ce61-4587-a6de-16b4148f7235" SourceId="1" SourceUrl="http://localhost:8733/Design_Time_Addresses/Z4Net.Services/IZDeviceService/mex" />
+    <MetadataFile FileName="service.xsd" MetadataType="Schema" ID="047c2594-a74a-41f6-a744-14197802bc56" SourceId="1" SourceUrl="http://localhost:8733/Design_Time_Addresses/Z4Net.Services/IZDeviceService/mex" />
+    <MetadataFile FileName="service1.xsd" MetadataType="Schema" ID="eb513f1c-375b-42ae-ae8f-84068a83475a" SourceId="1" SourceUrl="http://localhost:8733/Design_Time_Addresses/Z4Net.Services/IZDeviceService/mex" />
+    <MetadataFile FileName="Z4Net.Services.Dto.xsd" MetadataType="Schema" ID="dfe0772f-3d07-4f55-8359-513fd293d3f7" SourceId="1" SourceUrl="http://localhost:8733/Design_Time_Addresses/Z4Net.Services/IZDeviceService/mex" />
+    <MetadataFile FileName="Z4Net.Dto.Devices.xsd" MetadataType="Schema" ID="c310e01a-b541-4f1a-958a-3af9a38b7a6d" SourceId="1" SourceUrl="http://localhost:8733/Design_Time_Addresses/Z4Net.Services/IZDeviceService/mex" />
+    <MetadataFile FileName="Z4Net.Services.Dto.Devices.xsd" MetadataType="Schema" ID="dfaafd16-40a5-4366-9f7e-891829aa292a" SourceId="1" SourceUrl="http://localhost:8733/Design_Time_Addresses/Z4Net.Services/IZDeviceService/mex" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

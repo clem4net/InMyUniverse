@@ -42,9 +42,10 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Close all devices.
         /// </summary>
-        internal static void Close()
+        /// <param name="controller">Controller to close.</param>
+        internal static void Close(ControllerDto controller)
         {
-            ControllerBusiness.Close();
+            ControllerBusiness.Close(controller);
         }
 
         /// <summary>
@@ -58,25 +59,6 @@ namespace Z4Net.Business.Devices
         internal static bool Configure(ControllerDto controller, DeviceDto node, byte parameter, List<byte> value)
         {
             return ConfigurationBusiness.Set(controller, node, parameter, value);
-        }
-
-        /// <summary>
-        /// Connect to a controller.
-        /// </summary>
-        /// <param name="controller">Controller to connect.</param>
-        /// <returns>Connected controller.</returns>
-        internal static ControllerDto Connect(ControllerDto controller)
-        {
-            // initialize controller
-            var result = ControllerBusiness.Connect(controller);
-
-            // get nodes value
-            if (result.IsReady)
-            {
-                result.Nodes.Where(x => x.DeviceClassGeneric != DeviceClassGeneric.StaticController).ToList().ForEach(x => Get(result, x));
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -108,7 +90,16 @@ namespace Z4Net.Business.Devices
         /// <returns></returns>
         internal static List<ControllerDto> ListControllers()
         {
-            return ControllerBusiness.List();
+            // list controllers
+            var result = ControllerBusiness.List();
+
+            // get nodes value
+            foreach(var c in result)
+            {
+                c.Nodes.Where(x => x.DeviceClassGeneric != DeviceClassGeneric.StaticController).ToList().ForEach(x => Get(c, x));
+            }
+
+            return result;
         }
 
         /// <summary>

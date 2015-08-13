@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Z4Net.Business.Messaging;
@@ -78,7 +77,7 @@ namespace Z4Net.Business.Devices
             }
 
             // get node value
-            return result && node.Value == BitConverter.ToString(value.ToArray());
+            return result && node.Value.SequenceEqual(value);
         }
 
         /// <summary>
@@ -107,7 +106,7 @@ namespace Z4Net.Business.Devices
                     // Update node value
                     var valueLength = receivedMessage.Content.Count - 1;
                     var rawValue = receivedMessage.Content.Skip(receivedMessage.Content.Count - valueLength).Take(valueLength).ToList();
-                    receivedMessage.Node.Value = BitConverter.ToString(rawValue.ToArray());
+                    receivedMessage.Node.Value = rawValue;
 
                     // release event
                     WaitReportEvent.Set();

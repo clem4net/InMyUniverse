@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 namespace Z4Net.Dto.Devices
@@ -6,7 +7,6 @@ namespace Z4Net.Dto.Devices
     /// <summary>
     /// Node description.
     /// </summary>
-    [DataContract]
     public class DeviceDto
     {
 
@@ -14,7 +14,6 @@ namespace Z4Net.Dto.Devices
         /// Home identifier of the controller of the node.
         /// </summary>
         [XmlAttribute("controllerHomeId")]
-        [DataMember]
         public string HomeIdentifier { get; set; }
 
         /// <summary>
@@ -27,21 +26,18 @@ namespace Z4Net.Dto.Devices
         /// Device class of the node.
         /// </summary>
         [XmlAttribute("genericClass")]
-        [DataMember]
         public DeviceClassGeneric DeviceClassGeneric { get; set; } 
 
         /// <summary>
         /// Value of the node.
         /// </summary>
         [XmlAttribute("currentValue")]
-        [DataMember]
-        public string Value { get; set; }
+        public List<byte> Value { get; set; }
 
         /// <summary>
         /// Z-Wave identifier of the node.
         /// </summary>
         [XmlAttribute("zId")]
-        [DataMember]
         public int ZIdentifier { get; set; }
 
     }

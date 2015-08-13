@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Z4Net.Dto.Serial;
 using Z4Net.DtoFactory.Serial;
 
@@ -11,37 +10,17 @@ namespace Z4Net.Business.Serial
     internal static class PortBusiness
     {
 
-        #region Private properties
-
-        /// <summary>
-        /// Port used.
-        /// </summary>
-        private static Dictionary<string, PortDto> Ports { get; } = new Dictionary<string, PortDto>();
-
-        #endregion
-
         #region Internal methods
 
         /// <summary>
         /// Close all ports.
         /// </summary>
-        /// <param name="port">Optional port to close. If null, close all ports.</param>
-        internal static void Close(PortDto port = null)
+        /// <param name="port">Port to close.</param>
+        internal static void Close(PortDto port)
         {
-            if (Ports != null)
+            using (var ctx = new PortDtoFactory())
             {
-                using (var ctx = new PortDtoFactory())
-                {
-                    if (port == null)
-                    {
-                        Ports.Values.ToList().ForEach(x => ctx.Close(x));
-                    }
-                    else
-                    {
-                        ctx.Close(port);
-                    }
-                }
-                Ports.Clear();
+                ctx.Close(port);
             }
         }
 
@@ -52,32 +31,24 @@ namespace Z4Net.Business.Serial
         /// <returns>Port.</returns>
         internal static PortDto Connect(PortDto port)
         {
-            PortDto result;
-
-            // search if port is already existing
             var portName = port.Name?.ToUpperInvariant() ?? string.Empty;
 
             if (!string.IsNullOrEmpty(portName))
             {
-                // add port
-                if (!Ports.ContainsKey(portName)) Ports.Add(portName, new PortDto {Name = portName});
-
-                // connect port
-                result = Ports[portName];
-                if (result.IsOpen == false)
+                if (port.IsOpen == false)
                 {
                     using (var ctx = new PortDtoFactory())
                     {
-                        result = ctx.Connect(result);
+                        port = ctx.Connect(port);
                     }
                 }
             }
             else
             {
-                result = new PortDto();
+                port.IsOpen = false;
             }
 
-            return result;
+            return port;
         }
 
         /// <summary>
