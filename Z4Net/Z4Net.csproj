@@ -73,16 +73,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Business\Devices\ConfigurationBusiness.cs" />
+    <Compile Include="Business\Devices\ConstructorBusiness.cs" />
     <Compile Include="Business\Devices\ControllerBusiness.cs" />
     <Compile Include="Business\Devices\DevicesBusiness.cs" />
     <Compile Include="Business\Devices\IDevice.cs" />
     <Compile Include="Business\Devices\SwitchBinaryBusiness.cs" />
     <Compile Include="Business\Messaging\MessageProcessBusiness.cs" />
     <Compile Include="Business\Serial\PortBusiness.cs" />
+    <Compile Include="Business\Services\Definitions\LabelBusiness.cs" />
+    <Compile Include="Business\Services\Definitions\ProductBusiness.cs" />
     <Compile Include="Business\Services\NodeBusiness.cs" />
     <Compile Include="DtoFactory\Messaging\MessageProcessDtoFactory.cs" />
     <Compile Include="DtoFactory\Serial\PortDtoFactory.cs" />
-    <Compile Include="DtoFactory\Services\ServicesContext.cs" />
+    <Compile Include="DtoFactory\Services\Definitions\LabelDtoFactory.cs" />
+    <Compile Include="DtoFactory\Services\Definitions\ProductDtoFactory.cs" />
+    <Compile Include="Dto\Services\Definitions\ConstructorDto.cs" />
+    <Compile Include="Dto\Services\Definitions\ProductDto.cs" />
+    <Compile Include="Dto\Services\Definitions\ProductParameterDto.cs" />
+    <Compile Include="Dto\Services\Enums.cs" />
+    <Compile Include="Dto\Services\NodeParameterDto.cs" />
+    <Compile Include="Dto\Services\ServicesContext.cs" />
     <Compile Include="DtoFactory\Services\NodeDtoFactory.cs" />
     <Compile Include="Dto\Attributes\DataReceivedAttribute.cs" />
     <Compile Include="Dto\Devices\DeviceConstants.cs" />
@@ -98,6 +108,7 @@
     <Compile Include="Dto\Serial\Enums.cs" />
     <Compile Include="Dto\Serial\PortDto.cs" />
     <Compile Include="Dto\Serial\MessageDto.cs" />
+    <Compile Include="Dto\Services\Definitions\LabelDto.cs" />
     <Compile Include="Dto\Services\NodeDto.cs" />
     <Compile Include="IZService.cs" />
     <Compile Include="Program.cs" />

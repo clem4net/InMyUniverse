@@ -339,11 +339,20 @@ namespace Z4Net.Business.Devices
                     {
                         if ((byteData & (byte) Math.Pow(2, b)) == (byte) Math.Pow(2, b))
                         {
-                            controller.Nodes.Add(new DeviceDto
+                            int zId = ((i - 3)*8) + b + 1;
+
+                            if (zId == controller.ZIdentifier)
                             {
-                                HomeIdentifier = controller.HomeIdentifier,
-                                ZIdentifier = ((i - 3)*8) + b + 1
-                            });
+                                controller.Nodes.Add(controller);
+                            }
+                            else
+                            {
+                                controller.Nodes.Add(new DeviceDto
+                                {
+                                    HomeIdentifier = controller.HomeIdentifier,
+                                    ZIdentifier = zId
+                                });
+                            }
                         }
                     }
                 }
@@ -384,7 +393,7 @@ namespace Z4Net.Business.Devices
         /// </summary>
         /// <param name="controller">Concerned controller.s</param>
         /// <param name="receivedMessage">Message received.</param>
-        private static void GetNodeProtocolResponse(ControllerDto controller, MessageFromDto receivedMessage)
+        private static void GetNodeProtocolResponse(ControllerDto controller, MessageFromDto receivedMessage)   
         {
             if (receivedMessage.Content.Count >= 5)
             {

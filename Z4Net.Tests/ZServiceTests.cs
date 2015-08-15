@@ -5,6 +5,7 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Z4Net.Dto.Devices;
 using Z4Net.Dto.Services;
+using NodeDto = Z4Net.Dto.Services.NodeDto;
 
 namespace Z4Net.Tests
 {

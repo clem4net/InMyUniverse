@@ -24,7 +24,7 @@ namespace Technical
             {
                 result = query.FirstOrDefault();
             }
-            catch
+            catch(Exception e)
             {
                 result = default(T);
             }
@@ -64,7 +64,7 @@ namespace Technical
                 context.SaveChangesAsync();
                 result = true;
             }
-            catch
+            catch(Exception e)
             {
                 result = false;
             }

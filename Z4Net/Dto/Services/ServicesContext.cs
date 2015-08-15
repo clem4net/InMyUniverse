@@ -1,7 +1,7 @@
 ﻿using System.Data.Entity;
-using Z4Net.Dto.Services;
+using Z4Net.Dto.Services.Definitions;
 
-namespace Z4Net.DtoFactory.Services
+namespace Z4Net.Dto.Services
 {
     /// <summary>
     /// Service database context.
@@ -14,14 +14,22 @@ namespace Z4Net.DtoFactory.Services
         /// </summary>
         public ServicesContext() : base("name=Z4NetDevices")
         {
-            Configuration.ProxyCreationEnabled = false;
-            Configuration.LazyLoadingEnabled = false;
         }
+
+        /// <summary>
+        /// Labels.
+        /// </summary>
+        public DbSet<LabelDto> Labels { get; set; }
 
         /// <summary>
         /// Nodes.
         /// </summary>
         public DbSet<NodeDto> Nodes { get; set; }
+
+        /// <summary>
+        /// Product definitions.
+        /// </summary>
+        public DbSet<ProductDto> ProductDefinitions { get; set; }
 
     }
 }

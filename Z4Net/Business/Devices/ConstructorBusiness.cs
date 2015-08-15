@@ -91,9 +91,9 @@ namespace Z4Net.Business.Devices
         {
             if (request.Content.Count > 6 && request.Content[0] == (byte)ConstructorAction.Report)
             {
-                request.Node.ConstructorIdentifier = string.Concat(request.Content[1].ToString("X2"), request.Content[2].ToString("0:X2"));
+                request.Node.ConstructorIdentifier = string.Concat(request.Content[1].ToString("X2"), request.Content[2].ToString("X2"));
                 // content 3 and 4 are product type
-                request.Node.ProductIdentifier = string.Concat(request.Content[5].ToString("X2"), request.Content[6].ToString("0:X2"));
+                request.Node.ProductIdentifier = string.Concat(request.Content[5].ToString("X2"), request.Content[6].ToString("X2"));
             }
 
             WaitReport.Set();

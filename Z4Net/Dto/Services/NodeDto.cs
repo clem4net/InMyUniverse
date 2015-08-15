@@ -4,16 +4,23 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using Technical;
 using Z4Net.Dto.Devices;
+using Z4Net.Dto.Services.Definitions;
 
 namespace Z4Net.Dto.Services
 {
     /// <summary>
     /// Node, represents a business device.
     /// </summary>
-    [Table("Devices")]
+    [Table("Nodes")]
     [DataContract]
     public class NodeDto
     {
+
+        /// <summary>
+        /// Product definition identifier.
+        /// </summary>
+        [Column("CST_ID"), MaxLength(4)]
+        public string ConstructorIdentifier { get; set; }
 
         /// <summary>
         /// Controller home identifier.
@@ -25,9 +32,26 @@ namespace Z4Net.Dto.Services
         /// <summary>
         /// Node unique identifier.
         /// </summary>
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.None), Column("ID")]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), Column("ID")]
         [DataMember]
         public int Identifier { get; set; }
+        
+        /// <summary>
+        /// Parameters.
+        /// </summary>
+        public virtual ICollection<NodeParameterDto> Parameters { get; set; }
+
+        /// <summary>
+        /// Product definition.
+        /// </summary>
+        [NotMapped]
+        public virtual ProductDto Product { get; set; }
+
+        /// <summary>
+        /// Product definition identifier.
+        /// </summary>
+        [Column("PRD_ID"), MaxLength(4)]
+        public string ProductIdentifier { get; set; }
 
         /// <summary>
         /// Device type.
