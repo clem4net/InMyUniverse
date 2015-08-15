@@ -113,7 +113,7 @@ namespace Z4Net.Business.Devices
 
                 switch (resposne.Command)
                 {
-                    case MessageCommand.GetApiCapabilities:
+                    case MessageCommand.GetDeviceCapabilities:
                         GetApiCapabilitiesResponse(controller, resposne);
                         break;
                     case MessageCommand.GetHomeId:
@@ -159,6 +159,7 @@ namespace Z4Net.Business.Devices
             {
                 controller.IsReady = GetHomeId(controller);
                 if (controller.IsReady) controller.IsReady = GetControllerNodes(controller);
+                if (controller.IsReady) controller.IsReady = GetDeviceCapabilities(controller);
                 if (controller.IsReady)
                 {
                     foreach (var x in controller.Nodes)
@@ -259,10 +260,10 @@ namespace Z4Net.Business.Devices
         /// <param name="controller">Concerned controller.</param>
         /// <returns>True if identifier is got.</returns>
         /// <remarks>Not used because I don't how to use the response.</remarks>
-        private static bool GetApiCapabilities(ControllerDto controller)
+        private static bool GetDeviceCapabilities(ControllerDto controller)
         {
             // send message
-            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetApiCapabilities, controller)))
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(MessageCommand.GetDeviceCapabilities, controller)))
             {
                 // wait for ack and response
                 WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
@@ -270,7 +271,7 @@ namespace Z4Net.Business.Devices
             }
 
             // get result
-            return !string.IsNullOrEmpty(controller.ManufacturerIdentifier) &&
+            return !string.IsNullOrEmpty(controller.ConstructorIdentifier) &&
                    !string.IsNullOrEmpty(controller.ProductType) &&
                    !string.IsNullOrEmpty(controller.ProductIdentifier);
         }
@@ -288,7 +289,7 @@ namespace Z4Net.Business.Devices
                 decimal.TryParse(string.Concat(receivedMessage.Content[0], ",", receivedMessage.Content[1]), out version);
                 controller.ApiVersion = version;
 
-                controller.ManufacturerIdentifier = string.Concat(receivedMessage.Content[2].ToString("00"), receivedMessage.Content[3].ToString("00"));
+                controller.ConstructorIdentifier = string.Concat(receivedMessage.Content[2].ToString("00"), receivedMessage.Content[3].ToString("00"));
                 controller.ProductType = string.Concat(receivedMessage.Content[3].ToString("00"), receivedMessage.Content[4].ToString("00"));
                 controller.ProductIdentifier = string.Concat(receivedMessage.Content[5].ToString("00"), receivedMessage.Content[6].ToString("00"));
                 controller.ApiCapabilities = receivedMessage.Content.Skip(7).ToList();
@@ -355,6 +356,7 @@ namespace Z4Net.Business.Devices
             // release event
             WaitEvent.Set();
         }
+
 
         /// <summary>
         /// Get node protocol.

@@ -28,6 +28,11 @@ namespace Z4Net.Business.Devices
             {
                 iDevice = new ConfigurationBusiness();
             }
+            // constructor command
+            else if (messageProcessing.MessageTo.IsConstructor)
+            {
+                iDevice = new ConstructorBusiness();
+            }
             // generic response
             else
             {
@@ -96,7 +101,11 @@ namespace Z4Net.Business.Devices
             // get nodes value
             foreach(var c in result)
             {
-                c.Nodes.Where(x => x.DeviceClassGeneric != DeviceClassGeneric.StaticController).ToList().ForEach(x => Get(c, x));
+                c.Nodes.Where(x => x.DeviceClassGeneric != DeviceClassGeneric.StaticController).ToList().ForEach(x =>
+                {
+                    Get(c, x);
+                    (new ConstructorBusiness()).Get(c, x);
+                });
             }
 
             return result;
@@ -116,6 +125,11 @@ namespace Z4Net.Business.Devices
             if (messageProcessing.MessageTo.IsConfiguration)
             {
                 iDevice = new ConfigurationBusiness();
+            }
+            // constructor command
+            else if (messageProcessing.MessageTo.IsConstructor)
+            {
+                iDevice = new ConstructorBusiness();
             }
             // generic response
             else

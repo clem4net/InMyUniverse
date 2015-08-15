@@ -7,9 +7,9 @@ using Z4Net.Dto.Messaging;
 namespace Z4Net.Business.Devices
 {
     /// <summary>
-    /// Node configuration.
+    /// Constructor business.
     /// </summary>
-    public class ConfigurationBusiness : IDevice
+    internal class ConstructorBusiness : IDevice
     {
 
         #region Private data
@@ -24,9 +24,14 @@ namespace Z4Net.Business.Devices
         /// </summary>
         private static readonly EventWaitHandle WaitEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
 
+        /// <summary>
+        /// Wait event from node.
+        /// </summary>
+        private static readonly EventWaitHandle WaitReport = new EventWaitHandle(false, EventResetMode.AutoReset);
+
         #endregion
 
-        #region IDevice methods
+        #region Device methods
 
         /// <summary>
         /// Get the value of the device.
@@ -36,15 +41,24 @@ namespace Z4Net.Business.Devices
         /// <returns>True if device value is completed.</returns>
         public bool Get(ControllerDto controller, DeviceDto device)
         {
-            return false;
+            // send message
+            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(controller, device.ZIdentifier)))
+            {
+                // wait for ack and response
+                WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
+                WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+                WaitReport.WaitOne(DeviceConstants.WaitEventTimeout);
+            }
+
+            return !string.IsNullOrEmpty(device.ConstructorIdentifier) && !string.IsNullOrEmpty(device.ProductIdentifier);
         }
 
         /// <summary>
-        /// Set the device value.
+        /// No possible update of constructor.
         /// </summary>
         /// <param name="controller">Concerned controller.</param>
         /// <param name="device">Concerned device.</param>
-        /// <param name="value">Value to set. First byte is parameter identifier, next is parameter value.</param>
+        /// <param name="value">Value to set.</param>
         /// <returns>True if value is setted.</returns>
         public bool Set(ControllerDto controller, DeviceDto device, List<byte> value)
         {
@@ -54,8 +68,8 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Acknowlegment received.
         /// </summary>
-        /// <param name="receivedMessage">Recevied message.</param>
-        public void AcknowlegmentReceived(MessageFromDto receivedMessage)
+        /// <param name="message">Received message.</param>
+        public void AcknowlegmentReceived(MessageFromDto message)
         {
             WaitAcknowledgment.Set();
         }
@@ -70,35 +84,19 @@ namespace Z4Net.Business.Devices
         }
 
         /// <summary>
-        /// A request is recevied from node.
+        /// No request received.
         /// </summary>
         /// <param name="request">Received message.</param>
         public void RequestRecevied(MessageFromDto request)
         {
-        }
-
-        /// <summary>
-        /// Configure a parameter.
-        /// </summary>
-        /// <param name="controller">Controller used to send message.</param>
-        /// <param name="node">Concerned message.</param>
-        /// <param name="parameter">Parameter identifier.</param>
-        /// <param name="value">Parameter value.</param>
-        /// <returns>True if configuration is OK.</returns>
-        internal static bool Set(ControllerDto controller, DeviceDto node, byte parameter, List<byte> value)
-        {
-            var content = new List<byte> { (byte)ConfigurationAction.Set, parameter, (byte)value.Count };
-            content.AddRange(value);
-
-            // send message
-            if (MessageProcessBusiness.Send(controller, CreateCommandMessage(node, content)))
+            if (request.Content.Count > 6 && request.Content[0] == (byte)ConstructorAction.Report)
             {
-                // wait for ack and response
-                WaitAcknowledgment.WaitOne(DeviceConstants.WaitEventTimeout);
-                WaitEvent.WaitOne(DeviceConstants.WaitEventTimeout);
+                request.Node.ConstructorIdentifier = string.Concat(request.Content[1].ToString("X2"), request.Content[2].ToString("0:X2"));
+                // content 3 and 4 are product type
+                request.Node.ProductIdentifier = string.Concat(request.Content[5].ToString("X2"), request.Content[6].ToString("0:X2"));
             }
 
-            return true;
+            WaitReport.Set();
         }
 
         #endregion
@@ -108,25 +106,22 @@ namespace Z4Net.Business.Devices
         /// <summary>
         /// Create a command message.
         /// </summary>
-        /// <param name="node">Concerned node.</param>
-        /// <param name="content">Content to send.</param>
+        /// <param name="controller">Contextual node of the message.</param>
+        /// <param name="zId">Node identifier to send in message. 0x00 if no node is concerned.</param>
         /// <returns>Message.</returns>
-        private static MessageToDto CreateCommandMessage(DeviceDto node, List<byte> content)
+        private static MessageToDto CreateCommandMessage(DeviceDto controller, int zId)
         {
             var result = new MessageToDto
             {
                 Command = MessageCommand.SendData,
-                Content = new List<byte> { (byte)RequestCommandClass.Configuration },
-                IsConfiguration = true,
                 IsValid = true,
-                Node = node,
+                Node = controller,
+                ZIdentifier = (byte)zId,
                 Type = MessageType.Request,
-                ZIdentifier = node.ZIdentifier
-            };
+                Content = new List<byte> { 0x02, (byte)RequestCommandClass.Constructor, (byte)ConstructorAction.Get },
 
-            // fill content
-            result.Content.AddRange(content);
-            result.Content.Insert(0, (byte)result.Content.Count);
+                IsConstructor = true
+            };
 
             return result;
         }

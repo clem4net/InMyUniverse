@@ -9,10 +9,21 @@ namespace Z4Net.Dto.Devices
     public enum RequestCommandClass
     {
         None = 0x00,
+        /// <summary>
+        /// Process a switch binary.
+        /// </summary>
         [DataReceived(typeof(SwitchBinaryBusiness))]
         SwitchBinaryAction = 0x25,
+        /// <summary>
+        /// Configure a node.
+        /// </summary>
         [DataReceived(typeof(ConfigurationBusiness))]
-        Configuration = 0x70
+        Configuration = 0x70,
+        /// <summary>
+        /// Get node constructor, product identifier ...
+        /// </summary>
+        [DataReceived(typeof(ConstructorBusiness))]
+        Constructor = 0x72
     }
 
     /// <summary>
@@ -75,5 +86,14 @@ namespace Z4Net.Dto.Devices
         Get = 0x05,
         Report = 0x06
     };
+
+    /// <summary>
+    /// Constructor action.
+    /// </summary>
+    public enum ConstructorAction
+    {
+        Get = 0x04,
+        Report = 0x05
+    }
 
 }

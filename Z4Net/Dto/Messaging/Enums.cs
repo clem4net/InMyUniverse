@@ -23,7 +23,7 @@ namespace Z4Net.Dto.Messaging
         /// <summary>
         /// Ask serial port capacities.
         /// </summary>
-        GetApiCapabilities = 0x07,
+        GetDeviceCapabilities = 0x07,
         /// <summary>
         /// Send data to node.
         /// </summary>
@@ -39,7 +39,7 @@ namespace Z4Net.Dto.Messaging
         /// <summary>
         /// Get node protocol (class type ...)
         /// </summary>
-        GetNodeProtocol = 0x041,
+        GetNodeProtocol = 0x41,
         /// <summary>
         /// Request of supported classes by controller.
         /// </summary>

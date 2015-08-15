@@ -11,5 +11,10 @@
         /// </summary>
         public bool IsConfiguration { get; set; }
 
+        /// <summary>
+        /// True if message is a constructor message.
+        /// </summary>
+        public bool IsConstructor { get; set; }
+
     }
 }
