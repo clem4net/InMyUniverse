@@ -12,7 +12,7 @@ namespace Z4Net
         /// <summary>
         /// Close connection.
         /// </summary>
-        public void Close()
+        public void Disconnect()
         {
             NodeBusiness.Close();
         }
@@ -20,13 +20,11 @@ namespace Z4Net
         /// <summary>
         /// Configure a device.
         /// </summary>
-        /// <param name="device">Device to configure.</param>
-        /// <param name="parameter">Parameter identifier.</param>
-        /// <param name="value">Parameter value.</param>
+        /// <param name="parameter">Parameter to configure.</param>
         /// <returns>Configuration result.</returns>
-        public bool Configure(NodeDto device, byte parameter, List<byte> value)
+        public bool Configure(NodeParameterDto parameter)
         {
-            return false;
+            return NodeBusiness.Configure(parameter);
         }
 
         /// <summary>

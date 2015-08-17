@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+using Technical;
 using Z4Net.Dto.Services.Definitions;
 
 namespace Z4Net.Dto.Services
@@ -8,6 +11,8 @@ namespace Z4Net.Dto.Services
     /// <summary>
     /// Node parameter.
     /// </summary>
+    [Table("NodesParameters")]
+    [DataContract]
     public class NodeParameterDto
     {
 
@@ -27,31 +32,46 @@ namespace Z4Net.Dto.Services
         /// Parameter identifier.
         /// </summary>
         [Key, Column("ID"), DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DataMember]
         public int Identifier { get; set; }
 
         /// <summary>
         /// Node identifier.
         /// </summary>
         [Column("NODE_ID")]
+        [DataMember]
         public int NodeIdentifier { get; set; }
 
         /// <summary>
         /// Parameter node.
         /// </summary>
         [ForeignKey("NodeIdentifier")]
-        public virtual NodeDto Node { get; set; }
+        public NodeDto Node { get; set; }
 
         /// <summary>
         /// Last parameter update.
         /// </summary>
         [Column("MODIFICATION")]
+        [DataMember]
         public DateTime Update { get; set; }
 
         /// <summary>
-        /// Parameter value.
+        /// Raw value.
         /// </summary>
-        [Column("VALUE"), MaxLength(20)]
-        public string Value { get; set; }
+        [NotMapped]
+        [DataMember]
+        public List<byte> Value
+        {
+            get { return ValueProxy.ToHexList(); }
+            set { ValueProxy = value != null ? value.ToHexString() : string.Empty; }
+        }
+
+        /// <summary>
+        /// Node value.
+        /// </summary>
+        [MaxLength(20), Column("VALUE")]
+        [DataMember]
+        public string ValueProxy { get; set; }
 
     }
 }

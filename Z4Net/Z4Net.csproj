@@ -83,10 +83,12 @@
     <Compile Include="Business\Services\Definitions\LabelBusiness.cs" />
     <Compile Include="Business\Services\Definitions\ProductBusiness.cs" />
     <Compile Include="Business\Services\NodeBusiness.cs" />
+    <Compile Include="Business\Services\NodeParameterBusiness.cs" />
     <Compile Include="DtoFactory\Messaging\MessageProcessDtoFactory.cs" />
     <Compile Include="DtoFactory\Serial\PortDtoFactory.cs" />
     <Compile Include="DtoFactory\Services\Definitions\LabelDtoFactory.cs" />
     <Compile Include="DtoFactory\Services\Definitions\ProductDtoFactory.cs" />
+    <Compile Include="DtoFactory\Services\NodeParameterDtoFactory.cs" />
     <Compile Include="Dto\Services\Definitions\ConstructorDto.cs" />
     <Compile Include="Dto\Services\Definitions\ProductDto.cs" />
     <Compile Include="Dto\Services\Definitions\ProductParameterDto.cs" />

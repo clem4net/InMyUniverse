@@ -70,5 +70,11 @@ namespace Z4Net.Dto.Services.Definitions
         [Column("TYPE")]
         public ParameterType Type { get; set; }
 
+        /// <summary>
+        /// Z identifier of the parameter.
+        /// </summary>
+        [Column("PRM_ID")]
+        public byte ZIdentifier { get; set; }
+
     }
 }

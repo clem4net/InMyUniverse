@@ -23,25 +23,28 @@ namespace Z4Net.Business.Devices
         {
             IDevice iDevice = null;
 
-            // configuration command
-            if (messageProcessing.MessageTo.IsConfiguration)
+            if (messageProcessing.MessageTo != null)
             {
-                iDevice = new ConfigurationBusiness();
-            }
-            // constructor command
-            else if (messageProcessing.MessageTo.IsConstructor)
-            {
-                iDevice = new ConstructorBusiness();
-            }
-            // generic response
-            else
-            {
-                var processAttr = ReflectionHelper.GetEnumValueAttribute<DeviceClassGeneric, DataReceivedAttribute>(messageProcessing.MessageTo.Node.DeviceClassGeneric);
-                if (processAttr != null) iDevice = ReflectionHelper.CreateInstance<IDevice>(processAttr.ClassType);
-            }
+                // configuration command
+                if (messageProcessing.MessageTo.IsConfiguration)
+                {
+                    iDevice = new ConfigurationBusiness();
+                }
+                // constructor command
+                else if (messageProcessing.MessageTo.IsConstructor)
+                {
+                    iDevice = new ConstructorBusiness();
+                }
+                // generic response
+                else
+                {
+                    var processAttr = ReflectionHelper.GetEnumValueAttribute<DeviceClassGeneric, DataReceivedAttribute>(messageProcessing.MessageTo.Node.DeviceClassGeneric);
+                    if (processAttr != null) iDevice = ReflectionHelper.CreateInstance<IDevice>(processAttr.ClassType);
+                }
 
-            // execute
-            iDevice?.AcknowlegmentReceived(messageProcessing.MessageFrom);
+                // execute
+                iDevice?.AcknowlegmentReceived(messageProcessing.MessageFrom);
+            }
         }
 
         /// <summary>

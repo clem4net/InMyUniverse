@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ServiceModel;
 using Z4Net.Dto.Services;
+using Z4Net.Dto.Services.Definitions;
 
 namespace Z4Net
 {
@@ -15,17 +16,15 @@ namespace Z4Net
         /// Close connection.
         /// </summary>
         [OperationContract]
-        void Close();
+        void Disconnect();
 
         /// <summary>
-        /// Configure a device.
+        /// Update an existing parameter.
         /// </summary>
-        /// <param name="device">Device to configure.</param>
-        /// <param name="parameter">Parameter identifier.</param>
-        /// <param name="value">Parameter value.</param>
+        /// <param name="parameter">Parameter to configure.</param>
         /// <returns>Configuration result.</returns>
         [OperationContract]
-        bool Configure(NodeDto device, byte parameter, List<byte> value);
+        bool Configure(NodeParameterDto parameter);
 
         /// <summary>
         /// Get controller plugged to the system.

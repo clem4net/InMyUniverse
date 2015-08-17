@@ -5,7 +5,6 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Z4Net.Dto.Devices;
 using Z4Net.Dto.Services;
-using NodeDto = Z4Net.Dto.Services.NodeDto;
 
 namespace Z4Net.Tests
 {
@@ -25,18 +24,18 @@ namespace Z4Net.Tests
 
         #endregion
 
-        #region Close
+        #region Disconnect
 
         /// <summary>
         /// Test close.
         /// </summary>
         [TestMethod]
-        public void Close_Nominal()
+        public void Disconnect_Nominal()
         {
             // Initialize
 
             // Execute
-            Service.Close();
+            Service.Disconnect();
 
             // Test
 
@@ -53,31 +52,35 @@ namespace Z4Net.Tests
         [TestMethod]
         public void Configure_Nominal()
         {
-            //// Initialize
-            //var controller = Service.GetControllers().FirstOrDefault();
-            //if (controller == null) return;
-            //controller = Service.Connect(controller);
-            //Assert.IsTrue(controller.IsReady);
-            //if (controller.Nodes.Count == 0) return;
-            //var node = controller.Nodes.FirstOrDefault(x => x.DeviceClassGeneric == DeviceClassGeneric.SwitchBinary);
-            //if (node == null) return;
+            // Initialize
+            var switchBinary = Service.GetNodes().FirstOrDefault(x => x.Type == DeviceClassGeneric.SwitchBinary);
 
-            //// Execute
-            //var test = Service.Configure(controller, node, 0x04, new List<byte> {15});
-            //Assert.IsTrue(test);
+            // get auto off parameter of fibaro switch
+            var parameter = switchBinary?.Product.Parameters.FirstOrDefault(x => x.ZIdentifier == 4);
+            if (parameter == null) return;
+            var nodeParameter = new NodeParameterDto
+            {
+                DefinitionIdentifier = parameter.Identifier,
+                NodeIdentifier = switchBinary.Identifier,
+                Value = new List<byte> {10} // 1 sec
+            };
 
-            //// Test
-            //test = Service.Set(controller, node, new List<byte> { 0xFF });
-            //Assert.IsTrue(test);
-            //Assert.AreEqual(node.Value, "FF");
-            //Thread.Sleep(1500);
-            //test = Service.Get(controller, node);
-            //Assert.IsTrue(test);
-            //Assert.AreEqual(node.Value, "00");
+            // Execute
+            var test = Service.Configure(nodeParameter);
 
-            //// Clean
-            //Service.Configure(controller, node, 0x04, new List<byte> { 0 });
-            //Service.Close();
+            // Test
+            Assert.IsTrue(test);
+
+            switchBinary.Value = new List<byte> {0xFF};
+            test = Service.Set(switchBinary);
+            Assert.IsTrue(test);
+            Assert.IsTrue(switchBinary.Value.SequenceEqual(new List<byte> { 0xFF }));
+            Thread.Sleep(1200);
+
+            // Clean
+            nodeParameter.Value = new List<byte> { 0x00 }; // off
+            Service.Configure(nodeParameter);
+            Service.Disconnect();
         }
 
         #endregion
@@ -101,7 +104,7 @@ namespace Z4Net.Tests
             Assert.AreNotEqual(test.Count, 0);
 
             // clean
-            Service.Close();
+            Service.Disconnect();
         }
 
         #endregion
@@ -130,7 +133,7 @@ namespace Z4Net.Tests
             Thread.Sleep(500);
             switchNode.Value = new List<byte> { 0x00 };
             Service.Set(switchNode);
-            Service.Close();
+            Service.Disconnect();
         }
 
         /// <summary>

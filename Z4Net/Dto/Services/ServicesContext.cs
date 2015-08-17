@@ -27,6 +27,11 @@ namespace Z4Net.Dto.Services
         public DbSet<NodeDto> Nodes { get; set; }
 
         /// <summary>
+        /// Parameters of nodes.
+        /// </summary>
+        public DbSet<NodeParameterDto> NodeParameters { get; set; }
+
+        /// <summary>
         /// Product definitions.
         /// </summary>
         public DbSet<ProductDto> ProductDefinitions { get; set; }
