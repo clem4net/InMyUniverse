@@ -1,4 +1,5 @@
 ﻿using System.ServiceProcess;
+using Z4NetScheduler.Business;
 
 namespace Z4NetScheduler
 {
@@ -9,9 +10,8 @@ namespace Z4NetScheduler
         {
             //ServiceBase.Run(new[] {new Service1()});
 
-            ServiceZDevices.ZDeviceServiceClient cli = new ServiceZDevices.ZDeviceServiceClient();
-            var list = cli.ListDevices();
-            cli.Close();
+            TaskBusiness.Process();
+
         }
     }
 

@@ -68,12 +68,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Business\ActionBusiness.cs" />
+    <Compile Include="Business\Events\AEventBusiness.cs" />
+    <Compile Include="Business\Events\TimeEventBusiness.cs" />
+    <Compile Include="Business\TaskBusiness.cs" />
+    <Compile Include="DtoFactory\Z4NetSchedulerContext.cs" />
+    <Compile Include="DtoFactory\TaskDtoFactory.cs" />
     <Compile Include="Dto\ActionDto.cs" />
-    <Compile Include="Dto\DeviceDto.cs" />
-    <Compile Include="Dto\EventDto.cs" />
+    <Compile Include="Dto\Enums.cs" />
+    <Compile Include="Dto\Events\EventDto.cs" />
     <Compile Include="Dto\TaskDto.cs" />
-    <Compile Include="Dto\TimeEventDto.cs" />
-    <Compile Include="Dto\ValidationDto.cs" />
+    <Compile Include="Dto\Events\TimeEventDto.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service References\ServiceZDevices\Reference.cs">
@@ -105,10 +110,7 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Business\" />
-    <Folder Include="DtoFactory\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
@@ -126,6 +128,16 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Technical\Technical.csproj">
+      <Project>{AFBBEEAE-2B44-4764-A367-06AF774EADA7}</Project>
+      <Name>Technical</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Z4Net\Z4Net.csproj">
+      <Project>{8355BCC2-F3D4-4D60-899D-90FC47E6EDB2}</Project>
+      <Name>Z4Net</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.98.1\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.98.1\build\net46\System.Data.SQLite.Core.targets')" />
